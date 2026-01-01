@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Shield, Clock, FileText, Bell } from "lucide-react";
+import { Plus, Shield, Clock, FileText, Bell, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/layout/BottomNav";
 
@@ -44,10 +44,18 @@ const ClienteDashboard = () => {
               João Silva
             </h1>
           </div>
-          <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center relative">
-            <Bell className="w-5 h-5 text-white" />
-            <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/chat')}
+              className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <MessageCircle className="w-5 h-5 text-white" />
+            </button>
+            <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center relative">
+              <Bell className="w-5 h-5 text-white" />
+              <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+            </button>
+          </div>
         </motion.div>
 
         {/* Stats Cards */}
