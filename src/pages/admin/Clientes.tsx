@@ -4,36 +4,35 @@ import { motion } from "framer-motion";
 import { 
   ChevronLeft, 
   Search, 
-  ClipboardList, 
+  Users, 
+  Phone, 
   CheckCircle2,
   Clock,
-  AlertCircle,
+  XCircle,
   Plus,
   Pencil,
-  Trash2,
-  User,
-  Calendar
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const Ordens = () => {
+const AdminClientes = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filtro, setFiltro] = useState<"todos" | "concluido" | "andamento" | "pendente">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
 
-  const [ordens, setOrdens] = useState([
-    { id: "1", titulo: "Manutenção Box Banheiro", cliente: "Ana Paula", status: "concluido", data: "15/01/2026", valor: "R$ 200,00" },
-    { id: "2", titulo: "Instalação Película", cliente: "Roberto Carlos", status: "andamento", data: "18/01/2026", valor: "R$ 350,00" },
-    { id: "3", titulo: "Troca de Roldanas", cliente: "Maria José", status: "pendente", data: "20/01/2026", valor: "R$ 150,00" },
-    { id: "4", titulo: "Manutenção Preventiva", cliente: "Fernando Lima", status: "concluido", data: "12/01/2026", valor: "R$ 180,00" },
-    { id: "5", titulo: "Reparo Porta Blindex", cliente: "Carla Santos", status: "andamento", data: "17/01/2026", valor: "R$ 280,00" },
-    { id: "6", titulo: "Instalação Box", cliente: "José Oliveira", status: "pendente", data: "22/01/2026", valor: "R$ 1.200,00" },
+  const [clientes, setClientes] = useState([
+    { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", status: "ativo", dataIndicacao: "10/01/2026" },
+    { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", status: "ativo", dataIndicacao: "08/01/2026" },
+    { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", status: "pendente", dataIndicacao: "05/01/2026" },
+    { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", status: "ativo", dataIndicacao: "03/01/2026" },
+    { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", status: "inativo", dataIndicacao: "01/01/2026" },
+    { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", status: "pendente", dataIndicacao: "28/12/2025" },
   ]);
 
-  const handleDelete = (id: string, titulo: string) => {
-    setOrdens(prev => prev.filter(o => o.id !== id));
-    toast.success(`Ordem "${titulo}" removida com sucesso`);
+  const handleDelete = (id: string, nome: string) => {
+    setClientes(prev => prev.filter(c => c.id !== id));
+    toast.success(`Cliente "${nome}" removido com sucesso`);
   };
 
   const handleEdit = (id: string) => {
@@ -42,45 +41,46 @@ const Ordens = () => {
 
   const filtros = [
     { key: "todos", label: "Todos" },
-    { key: "concluido", label: "Concluídos" },
-    { key: "andamento", label: "Em Andamento" },
-    { key: "pendente", label: "Pendentes" },
+    { key: "ativos", label: "Ativos" },
+    { key: "pendentes", label: "Pendentes" },
   ];
 
-  const filteredOrdens = ordens.filter((ordem) => {
-    const matchesSearch = ordem.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          ordem.cliente.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFiltro = filtro === "todos" || ordem.status === filtro;
+  const filteredClientes = clientes.filter((cliente) => {
+    const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFiltro = 
+      filtro === "todos" || 
+      (filtro === "ativos" && cliente.status === "ativo") ||
+      (filtro === "pendentes" && cliente.status === "pendente");
     return matchesSearch && matchesFiltro;
   });
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "concluido":
+      case "ativo":
         return <CheckCircle2 className="w-4 h-4 text-success" />;
-      case "andamento":
+      case "pendente":
         return <Clock className="w-4 h-4 text-warning" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-muted-foreground" />;
+        return <XCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "concluido":
-        return "Concluído";
-      case "andamento":
-        return "Em Andamento";
-      default:
+      case "ativo":
+        return "Ativo";
+      case "pendente":
         return "Pendente";
+      default:
+        return "Inativo";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "concluido":
+      case "ativo":
         return "bg-success/10 text-success";
-      case "andamento":
+      case "pendente":
         return "bg-warning/10 text-warning";
       default:
         return "bg-muted text-muted-foreground";
@@ -100,16 +100,16 @@ const Ordens = () => {
               <ChevronLeft className="w-6 h-6" />
             </button>
             <h1 className="text-lg font-semibold text-foreground font-display">
-              Ordens de Serviço
+              Clientes
             </h1>
           </div>
           <Button 
-            onClick={() => navigate("/nova-ordem")}
+            onClick={() => toast.info("Cadastro de cliente será implementado")}
             size="sm"
             className="gap-1"
           >
             <Plus className="w-4 h-4" />
-            Nova
+            Novo
           </Button>
         </div>
       </header>
@@ -119,7 +119,7 @@ const Ordens = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
-            placeholder="Buscar ordem..."
+            placeholder="Buscar cliente..."
             className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-foreground"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -127,12 +127,12 @@ const Ordens = () => {
         </div>
 
         {/* Filtros */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="flex gap-2">
           {filtros.map((f) => (
             <button
               key={f.key}
               onClick={() => setFiltro(f.key as typeof filtro)}
-              className={`py-2 px-4 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
                 filtro === f.key
                   ? "bg-primary text-white"
                   : "bg-muted text-muted-foreground"
@@ -149,63 +149,57 @@ const Ordens = () => {
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-3 gap-3"
         >
+          <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <p className="text-2xl font-bold text-foreground font-display">
+              {clientes.length}
+            </p>
+            <p className="text-xs text-muted-foreground">Total</p>
+          </div>
           <div className="bg-success/10 border border-success/20 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-success font-display">
-              {ordens.filter(o => o.status === "concluido").length}
+              {clientes.filter(c => c.status === "ativo").length}
             </p>
-            <p className="text-xs text-success">Concluídos</p>
+            <p className="text-xs text-success">Ativos</p>
           </div>
           <div className="bg-warning/10 border border-warning/20 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-warning font-display">
-              {ordens.filter(o => o.status === "andamento").length}
+              {clientes.filter(c => c.status === "pendente").length}
             </p>
-            <p className="text-xs text-warning">Em Andamento</p>
-          </div>
-          <div className="bg-muted border border-border rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-muted-foreground font-display">
-              {ordens.filter(o => o.status === "pendente").length}
-            </p>
-            <p className="text-xs text-muted-foreground">Pendentes</p>
+            <p className="text-xs text-warning">Pendentes</p>
           </div>
         </motion.div>
 
-        {/* Lista de Ordens */}
+        {/* Lista de Clientes */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="space-y-3"
         >
-          {filteredOrdens.map((ordem, index) => (
+          {filteredClientes.map((cliente, index) => (
             <motion.div
-              key={ordem.id}
+              key={cliente.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               className="p-4 rounded-xl bg-card border border-border"
             >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                  <ClipboardList className="w-6 h-6 text-accent" />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <p className="font-medium text-foreground">{ordem.titulo}</p>
-                    <p className="font-bold text-primary text-sm">{ordem.valor}</p>
+                  <p className="font-medium text-foreground">{cliente.nome}</p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Phone className="w-3 h-3" />
+                    <span>{cliente.telefone}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                    <User className="w-3 h-3" />
-                    <span>{ordem.cliente}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="w-3 h-3" />
-                      <span>{ordem.data}</span>
-                    </div>
-                    <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(ordem.status)}`}>
-                      {getStatusIcon(ordem.status)}
-                      {getStatusLabel(ordem.status)}
-                    </div>
-                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Cadastrado em {cliente.dataIndicacao}
+                  </p>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
+                  {getStatusIcon(cliente.status)}
+                  {getStatusLabel(cliente.status)}
                 </div>
               </div>
               <div className="flex gap-2 mt-3 pt-3 border-t border-border">
@@ -213,7 +207,7 @@ const Ordens = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(ordem.id)}
+                  onClick={() => handleEdit(cliente.id)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
@@ -222,7 +216,7 @@ const Ordens = () => {
                   variant="destructive"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleDelete(ordem.id, ordem.titulo)}
+                  onClick={() => handleDelete(cliente.id, cliente.nome)}
                 >
                   <Trash2 className="w-4 h-4" />
                   Deletar
@@ -232,10 +226,10 @@ const Ordens = () => {
           ))}
         </motion.div>
 
-        {filteredOrdens.length === 0 && (
+        {filteredClientes.length === 0 && (
           <div className="text-center py-12">
-            <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhuma ordem encontrada</p>
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Nenhum cliente encontrado</p>
           </div>
         )}
       </div>
@@ -243,4 +237,4 @@ const Ordens = () => {
   );
 };
 
-export default Ordens;
+export default AdminClientes;
