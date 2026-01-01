@@ -12,10 +12,13 @@ import {
   Plus,
   Pencil,
   Trash2,
-  MapPin
+  MapPin,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Vidracarias = () => {
   const navigate = useNavigate();
@@ -31,13 +34,23 @@ const Vidracarias = () => {
     { id: "6", nome: "Vidros Top", telefone: "(11) 3333-6666", status: "pendente", cidade: "ABC", clientes: 0 },
   ]);
 
+  const [editingVidracaria, setEditingVidracaria] = useState<typeof vidracarias[0] | null>(null);
+
   const handleDelete = (id: string, nome: string) => {
     setVidracarias(prev => prev.filter(v => v.id !== id));
     toast.success(`Vidraçaria "${nome}" removida com sucesso`);
   };
 
-  const handleEdit = (id: string) => {
-    toast.info("Função de edição será implementada em breve");
+  const handleEdit = (vidracaria: typeof vidracarias[0]) => {
+    setEditingVidracaria(vidracaria);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingVidracaria) {
+      setVidracarias(prev => prev.map(v => v.id === editingVidracaria.id ? editingVidracaria : v));
+      toast.success(`Vidraçaria "${editingVidracaria.nome}" atualizada com sucesso`);
+      setEditingVidracaria(null);
+    }
   };
 
   const filtros = [
@@ -214,7 +227,7 @@ const Vidracarias = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(vidracaria.id)}
+                  onClick={() => handleEdit(vidracaria)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
@@ -240,6 +253,55 @@ const Vidracarias = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Edição */}
+      {editingVidracaria && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-xl p-6 w-full max-w-md"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Editar Vidraçaria</h2>
+              <button onClick={() => setEditingVidracaria(null)} className="p-1 hover:bg-muted rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  value={editingVidracaria.nome}
+                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, nome: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Telefone</Label>
+                <Input
+                  value={editingVidracaria.telefone}
+                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, telefone: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Cidade</Label>
+                <Input
+                  value={editingVidracaria.cidade}
+                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, cidade: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setEditingVidracaria(null)}>
+                  Cancelar
+                </Button>
+                <Button className="flex-1" onClick={handleSaveEdit}>
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

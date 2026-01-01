@@ -29,10 +29,27 @@ const prestadorItems: NavItem[] = [
   { to: "/profile", icon: User, label: "Perfil" },
 ];
 
+const vidracariaItems: NavItem[] = [
+  { to: "/dashboard/vidracaria", icon: Home, label: "Início" },
+  { to: "/vidracaria/clientes", icon: User, label: "Clientes" },
+  { to: "/vidracaria/comissoes", icon: Wallet, label: "Comissões" },
+  { to: "/chat", icon: MessageCircle, label: "Chat" },
+  { to: "/vidracaria/profile", icon: User, label: "Perfil" },
+];
+
 export const BottomNav = ({ items, variant = "cliente" }: BottomNavProps) => {
   const location = useLocation();
   
-  const navItems = items || (variant === "prestador" ? prestadorItems : clienteItems);
+  const getNavItems = () => {
+    if (items) return items;
+    switch (variant) {
+      case "prestador": return prestadorItems;
+      case "vidracaria": return vidracariaItems;
+      default: return clienteItems;
+    }
+  };
+  
+  const navItems = getNavItems();
 
   return (
     <nav className="bottom-nav">
