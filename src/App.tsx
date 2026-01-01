@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import LandingPage from "./pages/LandingPage";
 import SelectProfile from "./pages/SelectProfile";
 import ClienteDashboard from "./pages/cliente/Dashboard";
@@ -44,6 +45,7 @@ const App = () => (
           {/* Auth */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/sobre" element={<LandingPage />} />
           <Route path="/register" element={<Login />} />
           <Route path="/select-profile" element={<SelectProfile />} />
