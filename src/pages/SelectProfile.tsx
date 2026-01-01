@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { User, Wrench, Building2, Shield, ChevronLeft, LogOut } from "lucide-react";
@@ -6,42 +6,18 @@ import { ProfileCard } from "@/components/ui/ProfileCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const baseProfiles = [
-  {
-    id: "cliente",
-    icon: <User className="w-7 h-7" />,
-    title: "Cliente",
-    description: "Prestador de Serviço",
-    route: "/dashboard/cliente",
-  },
-  {
-    id: "prestador",
-    icon: <Wrench className="w-7 h-7" />,
-    title: "Prestador de Serviço",
-    description: "Tranquilidade para Você!",
-    route: "/dashboard/prestador",
-  },
-  {
-    id: "vidraceiro",
-    icon: <Building2 className="w-7 h-7" />,
-    title: "Vidraceiro",
-    description: "Bons negócios de clientes fiéis",
-    route: "/dashboard/vidracaria",
-  },
-] as const;
-
-const adminProfile = {
-  id: "admin",
-  icon: <Shield className="w-7 h-7" />,
-  title: "Administrador",
-  description: "Gestão completa do sistema",
-  route: "/dashboard/admin",
-} as const;
+type ProfileType = {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  route: string;
+};
 
 const SelectProfile = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [availableProfiles, setAvailableProfiles] = useState<ProfileType[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -57,21 +33,92 @@ const SelectProfile = () => {
         return;
       }
 
-      const { data: roleData, error } = await supabase.rpc("has_role", {
+      const profiles: ProfileType[] = [];
+
+      // Verificar se é admin
+      const { data: isAdmin } = await supabase.rpc("has_role", {
         _user_id: user.id,
         _role: "admin",
       });
 
-      if (!active) return;
-
-      if (error) {
-        console.error("Erro ao carregar permissões:", error);
-        toast.error("Erro ao carregar permissões");
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(Boolean(roleData));
+      if (isAdmin) {
+        profiles.push({
+          id: "admin",
+          icon: <Shield className="w-7 h-7" />,
+          title: "Administrador",
+          description: "Gestão completa do sistema",
+          route: "/dashboard/admin",
+        });
       }
 
+      // Verificar se é cliente
+      const { data: clienteData } = await supabase
+        .from("clientes")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (clienteData) {
+        profiles.push({
+          id: "cliente",
+          icon: <User className="w-7 h-7" />,
+          title: "Cliente",
+          description: "Acompanhe seus serviços",
+          route: "/dashboard/cliente",
+        });
+      }
+
+      // Verificar se é prestador
+      const { data: prestadorData } = await supabase
+        .from("prestadores_servico")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (prestadorData) {
+        profiles.push({
+          id: "prestador",
+          icon: <Wrench className="w-7 h-7" />,
+          title: "Prestador de Serviço",
+          description: "Gerencie suas tarefas",
+          route: "/dashboard/prestador",
+        });
+      }
+
+      // Verificar se é vidraceiro
+      const { data: vidracariaData } = await supabase
+        .from("vidracarias")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (vidracariaData) {
+        profiles.push({
+          id: "vidraceiro",
+          icon: <Building2 className="w-7 h-7" />,
+          title: "Vidraceiro",
+          description: "Gerencie suas indicações",
+          route: "/dashboard/vidracaria",
+        });
+      }
+
+      if (!active) return;
+
+      // Se só tem um perfil, redireciona direto
+      if (profiles.length === 1) {
+        navigate(profiles[0].route, { replace: true });
+        return;
+      }
+
+      // Se não tem nenhum perfil cadastrado
+      if (profiles.length === 0) {
+        toast.error("Nenhum perfil encontrado para este usuário");
+        await supabase.auth.signOut();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      setAvailableProfiles(profiles);
       setLoading(false);
     };
 
@@ -81,10 +128,6 @@ const SelectProfile = () => {
       active = false;
     };
   }, [navigate]);
-
-  const profiles = useMemo(() => {
-    return isAdmin ? [...baseProfiles, adminProfile] : [...baseProfiles];
-  }, [isAdmin]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -155,7 +198,7 @@ const SelectProfile = () => {
           animate="visible"
           className="space-y-4"
         >
-          {profiles.map((profile) => (
+          {availableProfiles.map((profile) => (
             <motion.div key={profile.id} variants={itemVariants}>
               <ProfileCard
                 icon={profile.icon}
