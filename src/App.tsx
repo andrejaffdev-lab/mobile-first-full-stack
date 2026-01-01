@@ -39,6 +39,7 @@ import AdminPrestadores from "./pages/admin/Prestadores";
 import AdminVidracarias from "./pages/admin/Vidracarias";
 import AdminOrdens from "./pages/admin/Ordens";
 import AdminClientes from "./pages/admin/Clientes";
+import AdminCadastrarCliente from "./pages/admin/CadastrarCliente";
 import AdminChat from "./pages/admin/Chat";
 import NotFound from "./pages/NotFound";
 
@@ -102,6 +103,7 @@ const App = () => (
           <Route path="/admin/ordens" element={<AdminOrdens />} />
           <Route path="/admin/chat" element={<AdminChat />} />
           <Route path="/admin/clientes" element={<AdminClientes />} />
+          <Route path="/admin/novo-cliente" element={<AdminCadastrarCliente />} />
           <Route path="/admin" element={<Navigate to="/dashboard/admin" replace />} />
           
           {/* 404 */}
