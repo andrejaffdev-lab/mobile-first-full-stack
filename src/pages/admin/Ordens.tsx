@@ -24,13 +24,13 @@ type FiltroStatus = "todos" | "concluido" | "andamento" | "pendente";
 
 type OrdemListItem = {
   id: string;
-  cliente_nome: string;
+  numero_ordem: string | null;
   status: string | null;
   data_solicitacao: string;
   data_agendamento: string | null;
-  manutencao_anual: boolean | null;
-  colocacao_pelicula: boolean | null;
   valor_total: number | null;
+  cliente_id: string | null;
+  clientes: { nome: string } | null;
 };
 
 const formatMoneyBRL = (value: number | null) => {
@@ -39,12 +39,7 @@ const formatMoneyBRL = (value: number | null) => {
 };
 
 const getTituloServico = (ordem: OrdemListItem) => {
-  const manut = !!ordem.manutencao_anual;
-  const pel = !!ordem.colocacao_pelicula;
-  if (manut && pel) return "Manutenção + Película";
-  if (manut) return "Manutenção Anual";
-  if (pel) return "Colocação de Película";
-  return "Ordem de Serviço";
+  return ordem.numero_ordem || `OS-${ordem.id.slice(0, 8)}`;
 };
 
 const formatDate = (iso: string | null) => {
@@ -68,13 +63,11 @@ const Ordens = () => {
     try {
       const { data, error } = await supabase
         .from("ordens_servico")
-        .select(
-          "id, cliente_nome, status, data_solicitacao, data_agendamento, manutencao_anual, colocacao_pelicula, valor_total"
-        )
+        .select("id, numero_ordem, status, data_solicitacao, data_agendamento, valor_total, cliente_id, clientes(nome)")
         .order("data_solicitacao", { ascending: false });
 
       if (error) throw error;
-      setOrdens((data as OrdemListItem[]) ?? []);
+      setOrdens((data as unknown as OrdemListItem[]) ?? []);
     } catch (err: any) {
       console.error("Erro ao carregar ordens:", err);
       toast.error("Erro ao carregar ordens");
@@ -111,7 +104,7 @@ const Ordens = () => {
     const term = searchTerm.trim().toLowerCase();
     return ordens.filter((ordem) => {
       const titulo = getTituloServico(ordem).toLowerCase();
-      const cliente = (ordem.cliente_nome ?? "").toLowerCase();
+      const cliente = (ordem.clientes?.nome ?? "").toLowerCase();
       const matchesSearch = !term || titulo.includes(term) || cliente.includes(term);
       const status = (ordem.status ?? "pendente") as FiltroStatus;
       const matchesFiltro = filtro === "todos" || status === filtro;
@@ -246,7 +239,7 @@ const Ordens = () => {
 
                       <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                         <User className="w-3 h-3" />
-                        <span>{ordem.cliente_nome}</span>
+                        <span>{ordem.clientes?.nome || "Sem cliente"}</span>
                       </div>
 
                       <div className="flex items-center gap-2 mt-2">
