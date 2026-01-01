@@ -331,57 +331,57 @@ const OrdemServico: React.FC = () => {
                 <div className="space-y-3">
                   {/* Manutenção Anual */}
                   <div className={cn(
-                    "flex items-center gap-3 p-4 border-2 rounded-xl transition-all",
+                    "p-3 border-2 rounded-xl transition-all",
                     box.manutencaoSelecionada ? "border-success bg-success/5" : "border-border"
                   )}>
-                    <Checkbox 
-                      checked={box.manutencaoSelecionada}
-                      onCheckedChange={() => toggleServico(index, 'manutencao')}
-                      className="w-5 h-5"
-                    />
-                    <div className="flex-1 flex items-center gap-2">
-                      <Wrench className="w-5 h-5 text-success" />
-                      <span className="font-medium">Manutenção Anual</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        checked={box.manutencaoSelecionada}
+                        onCheckedChange={() => toggleServico(index, 'manutencao')}
+                        className="w-5 h-5 shrink-0"
+                      />
+                      <Wrench className="w-4 h-4 text-success shrink-0" />
+                      <span className="font-medium text-sm">Manutenção Anual</span>
+                      {box.manutencaoSelecionada && (
+                        <span className="font-bold text-success ml-auto text-sm">{formatCurrency(PRECO_MANUTENCAO)}</span>
+                      )}
                     </div>
                     {box.manutencaoSelecionada && (
-                      <>
-                        <span className="font-bold text-success">{formatCurrency(PRECO_MANUTENCAO)}</span>
-                        <Button 
-                          size="sm" 
-                          className="bg-success hover:bg-success/90"
-                          onClick={() => setModalManutencao({ open: true, boxIndex: index })}
-                        >
-                          Checklist
-                        </Button>
-                      </>
+                      <Button 
+                        size="sm" 
+                        className="bg-success hover:bg-success/90 mt-2 w-full"
+                        onClick={() => setModalManutencao({ open: true, boxIndex: index })}
+                      >
+                        Abrir Checklist
+                      </Button>
                     )}
                   </div>
 
                   {/* Troca de Película */}
                   <div className={cn(
-                    "flex items-center gap-3 p-4 border-2 rounded-xl transition-all",
+                    "p-3 border-2 rounded-xl transition-all",
                     box.peliculaSelecionada ? "border-purple-500 bg-purple-50" : "border-border"
                   )}>
-                    <Checkbox 
-                      checked={box.peliculaSelecionada}
-                      onCheckedChange={() => toggleServico(index, 'pelicula')}
-                      className="w-5 h-5"
-                    />
-                    <div className="flex-1 flex items-center gap-2">
-                      <Shield className="w-5 h-5 text-purple-600" />
-                      <span className="font-medium">Troca de Película</span>
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        checked={box.peliculaSelecionada}
+                        onCheckedChange={() => toggleServico(index, 'pelicula')}
+                        className="w-5 h-5 shrink-0"
+                      />
+                      <Shield className="w-4 h-4 text-purple-600 shrink-0" />
+                      <span className="font-medium text-sm">Troca de Película</span>
+                      {box.peliculaSelecionada && (
+                        <span className="font-bold text-purple-600 ml-auto text-sm">{formatCurrency(PRECO_PELICULA)}</span>
+                      )}
                     </div>
                     {box.peliculaSelecionada && (
-                      <>
-                        <span className="font-bold text-purple-600">{formatCurrency(PRECO_PELICULA)}</span>
-                        <Button 
-                          size="sm" 
-                          className="bg-purple-600 hover:bg-purple-700"
-                          onClick={() => setModalPelicula({ open: true, boxIndex: index })}
-                        >
-                          Checklist
-                        </Button>
-                      </>
+                      <Button 
+                        size="sm" 
+                        className="bg-purple-600 hover:bg-purple-700 mt-2 w-full"
+                        onClick={() => setModalPelicula({ open: true, boxIndex: index })}
+                      >
+                        Abrir Checklist
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -426,12 +426,12 @@ const OrdemServico: React.FC = () => {
                 <p className="text-center text-muted-foreground py-4">Nenhum serviço selecionado</p>
               )}
             </div>
-            <div className="flex justify-between items-center pt-4 border-t">
-              <div>
+            <div className="pt-4 border-t space-y-4">
+              <div className="text-center">
                 <span className="text-muted-foreground">Valor Total:</span>
                 <div className="text-3xl font-bold text-primary">{formatCurrency(total)}</div>
               </div>
-              <Button onClick={aprovarOrcamento} className="bg-success hover:bg-success/90 text-lg px-8 py-6" disabled={orcamentoAprovado}>
+              <Button onClick={aprovarOrcamento} className="w-full bg-success hover:bg-success/90 text-lg py-6" disabled={orcamentoAprovado}>
                 <Check className="w-5 h-5 mr-2" />
                 {orcamentoAprovado ? "Aprovado" : "Aprovar Orçamento"}
               </Button>
