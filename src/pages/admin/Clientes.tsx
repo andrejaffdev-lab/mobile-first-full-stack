@@ -1,22 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  ChevronLeft, 
-  Search, 
-  Users, 
-  Phone, 
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Plus,
-  Pencil,
-  Trash2,
-  X,
-  Mail,
-  MapPin,
-  Calendar,
-  FileText
+  ChevronLeft, Search, Users, Phone, CheckCircle2, Clock, XCircle,
+  Plus, Pencil, Trash2, X, Mail, MapPin, Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -25,85 +12,133 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+
+type Cliente = {
+  id: string;
+  nome: string;
+  telefone: string | null;
+  email: string | null;
+  documento: string | null;
+  cep: string | null;
+  endereco: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  estado: string | null;
+  status: string | null;
+  observacoes: string | null;
+  created_at: string;
+};
 
 const AdminClientes = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "ativo" | "pendente">("todos");
+  const [loading, setLoading] = useState(true);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
-  const [clientes, setClientes] = useState([
-    { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", email: "ana.paula@email.com", cpf: "123.456.789-00", endereco: "Rua das Flores, 123", cidade: "São Paulo", estado: "SP", cep: "01234-567", status: "ativo", dataCadastro: "10/01/2026", observacoes: "Cliente preferencial" },
-    { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", email: "roberto@email.com", cpf: "234.567.890-11", endereco: "Av. Brasil, 456", cidade: "São Paulo", estado: "SP", cep: "02345-678", status: "ativo", dataCadastro: "08/01/2026", observacoes: "" },
-    { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", email: "maria.jose@email.com", cpf: "345.678.901-22", endereco: "Rua Augusta, 789", cidade: "São Paulo", estado: "SP", cep: "03456-789", status: "pendente", dataCadastro: "05/01/2026", observacoes: "Aguardando confirmação de documentos" },
-    { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", email: "fernando@email.com", cpf: "456.789.012-33", endereco: "Rua Oscar Freire, 321", cidade: "São Paulo", estado: "SP", cep: "04567-890", status: "ativo", dataCadastro: "03/01/2026", observacoes: "" },
-    { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", email: "carla@email.com", cpf: "567.890.123-44", endereco: "Av. Paulista, 654", cidade: "São Paulo", estado: "SP", cep: "05678-901", status: "inativo", dataCadastro: "01/01/2026", observacoes: "Contrato encerrado" },
-    { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", email: "jose.oliveira@email.com", cpf: "678.901.234-55", endereco: "Rua Consolação, 987", cidade: "São Paulo", estado: "SP", cep: "06789-012", status: "pendente", dataCadastro: "28/12/2025", observacoes: "" },
-  ]);
+  const fetchClientes = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("clientes")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  const handleDelete = (id: string, nome: string) => {
-    setClientes(prev => prev.filter(c => c.id !== id));
-    toast.success(`Cliente "${nome}" removido com sucesso`);
+      if (error) throw error;
+      setClientes(data || []);
+    } catch (err: any) {
+      console.error("Erro ao carregar clientes:", err);
+      toast.error("Erro ao carregar clientes");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [editingCliente, setEditingCliente] = useState<typeof clientes[0] | null>(null);
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
-  const handleEdit = (cliente: typeof clientes[0]) => {
-    setEditingCliente(cliente);
+  const handleDelete = async (id: string, nome: string) => {
+    try {
+      const { error } = await supabase.from("clientes").delete().eq("id", id);
+      if (error) throw error;
+      setClientes(prev => prev.filter(c => c.id !== id));
+      toast.success(`Cliente "${nome}" removido com sucesso`);
+    } catch (err: any) {
+      console.error("Erro ao deletar cliente:", err);
+      toast.error("Erro ao deletar cliente");
+    }
   };
 
-  const handleSaveEdit = () => {
-    if (editingCliente) {
+  const handleSaveEdit = async () => {
+    if (!editingCliente) return;
+    try {
+      const { error } = await supabase
+        .from("clientes")
+        .update({
+          nome: editingCliente.nome,
+          email: editingCliente.email,
+          telefone: editingCliente.telefone,
+          documento: editingCliente.documento,
+          cep: editingCliente.cep,
+          endereco: editingCliente.endereco,
+          numero: editingCliente.numero,
+          bairro: editingCliente.bairro,
+          cidade: editingCliente.cidade,
+          estado: editingCliente.estado,
+          status: editingCliente.status as any,
+          observacoes: editingCliente.observacoes,
+        })
+        .eq("id", editingCliente.id);
+
+      if (error) throw error;
       setClientes(prev => prev.map(c => c.id === editingCliente.id ? editingCliente : c));
       toast.success(`Cliente "${editingCliente.nome}" atualizado com sucesso`);
       setEditingCliente(null);
+    } catch (err: any) {
+      console.error("Erro ao atualizar cliente:", err);
+      toast.error("Erro ao atualizar cliente");
     }
   };
 
   const filtros = [
     { key: "todos", label: "Todos" },
-    { key: "ativos", label: "Ativos" },
-    { key: "pendentes", label: "Pendentes" },
+    { key: "ativo", label: "Ativos" },
+    { key: "pendente", label: "Pendentes" },
   ];
 
   const filteredClientes = clientes.filter((cliente) => {
     const matchesSearch = cliente.nome.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFiltro = 
-      filtro === "todos" || 
-      (filtro === "ativos" && cliente.status === "ativo") ||
-      (filtro === "pendentes" && cliente.status === "pendente");
+    const status = cliente.status || "ativo";
+    const matchesFiltro = filtro === "todos" || status === filtro;
     return matchesSearch && matchesFiltro;
   });
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
     switch (status) {
-      case "ativo":
-        return <CheckCircle2 className="w-4 h-4 text-success" />;
-      case "pendente":
-        return <Clock className="w-4 h-4 text-warning" />;
-      default:
-        return <XCircle className="w-4 h-4 text-muted-foreground" />;
+      case "ativo": return <CheckCircle2 className="w-4 h-4 text-success" />;
+      case "pendente": return <Clock className="w-4 h-4 text-warning" />;
+      default: return <XCircle className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string | null) => {
     switch (status) {
-      case "ativo":
-        return "Ativo";
-      case "pendente":
-        return "Pendente";
-      default:
-        return "Inativo";
+      case "ativo": return "Ativo";
+      case "pendente": return "Pendente";
+      default: return "Inativo";
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
     switch (status) {
-      case "ativo":
-        return "bg-success/10 text-success";
-      case "pendente":
-        return "bg-warning/10 text-warning";
-      default:
-        return "bg-muted text-muted-foreground";
+      case "ativo": return "bg-success/10 text-success";
+      case "pendente": return "bg-warning/10 text-warning";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
@@ -119,15 +154,9 @@ const AdminClientes = () => {
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
-            <h1 className="text-lg font-semibold text-foreground font-display">
-              Clientes
-            </h1>
+            <h1 className="text-lg font-semibold text-foreground font-display">Clientes</h1>
           </div>
-          <Button 
-            onClick={() => toast.info("Cadastro de cliente será implementado")}
-            size="sm"
-            className="gap-1"
-          >
+          <Button onClick={() => navigate("/admin/novo-cliente")} size="sm" className="gap-1">
             <Plus className="w-4 h-4" />
             Novo
           </Button>
@@ -153,9 +182,7 @@ const AdminClientes = () => {
               key={f.key}
               onClick={() => setFiltro(f.key as typeof filtro)}
               className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
-                filtro === f.key
-                  ? "bg-primary text-white"
-                  : "bg-muted text-muted-foreground"
+                filtro === f.key ? "bg-primary text-white" : "bg-muted text-muted-foreground"
               }`}
             >
               {f.label}
@@ -164,15 +191,9 @@ const AdminClientes = () => {
         </div>
 
         {/* Resumo */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 gap-3"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-3 gap-3">
           <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-foreground font-display">
-              {clientes.length}
-            </p>
+            <p className="text-2xl font-bold text-foreground font-display">{clientes.length}</p>
             <p className="text-xs text-muted-foreground">Total</p>
           </div>
           <div className="bg-success/10 border border-success/20 rounded-xl p-3 text-center">
@@ -189,64 +210,56 @@ const AdminClientes = () => {
           </div>
         </motion.div>
 
-        {/* Lista de Clientes */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-3"
-        >
-          {filteredClientes.map((cliente, index) => (
-            <motion.div
-              key={cliente.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="p-4 rounded-xl bg-card border border-border"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{cliente.nome}</p>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    <span>{cliente.telefone}</span>
+        {/* Lista */}
+        {loading ? (
+          <div className="py-12 flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+          </div>
+        ) : (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            {filteredClientes.map((cliente, index) => (
+              <motion.div
+                key={cliente.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-4 rounded-xl bg-card border border-border"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Cadastrado em {cliente.dataCadastro}
-                  </p>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{cliente.nome}</p>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Phone className="w-3 h-3" />
+                      <span>{cliente.telefone || "Sem telefone"}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {format(new Date(cliente.created_at), "dd/MM/yyyy")}
+                    </p>
+                  </div>
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
+                    {getStatusIcon(cliente.status)}
+                    {getStatusLabel(cliente.status)}
+                  </div>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
-                  {getStatusIcon(cliente.status)}
-                  {getStatusLabel(cliente.status)}
+                <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+                  <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => setEditingCliente(cliente)}>
+                    <Pencil className="w-4 h-4" />
+                    Editar
+                  </Button>
+                  <Button variant="destructive" size="sm" className="flex-1 gap-1" onClick={() => handleDelete(cliente.id, cliente.nome)}>
+                    <Trash2 className="w-4 h-4" />
+                    Deletar
+                  </Button>
                 </div>
-              </div>
-              <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 gap-1"
-                  onClick={() => handleEdit(cliente)}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1 gap-1"
-                  onClick={() => handleDelete(cliente.id, cliente.nome)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Deletar
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
-        {filteredClientes.length === 0 && (
+        {!loading && filteredClientes.length === 0 && (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Nenhum cliente encontrado</p>
@@ -254,7 +267,7 @@ const AdminClientes = () => {
         )}
       </div>
 
-      {/* Modal de Edição Completo */}
+      {/* Modal de Edição */}
       {editingCliente && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
@@ -279,16 +292,16 @@ const AdminClientes = () => {
                     />
                   </div>
                   <div>
-                    <Label>CPF</Label>
+                    <Label>CPF/CNPJ</Label>
                     <Input
-                      value={editingCliente.cpf}
-                      onChange={(e) => setEditingCliente({ ...editingCliente, cpf: e.target.value })}
+                      value={editingCliente.documento || ""}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, documento: e.target.value })}
                     />
                   </div>
                   <div>
                     <Label>Telefone</Label>
                     <Input
-                      value={editingCliente.telefone}
+                      value={editingCliente.telefone || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, telefone: e.target.value })}
                     />
                   </div>
@@ -296,47 +309,59 @@ const AdminClientes = () => {
                     <Label>Email</Label>
                     <Input
                       type="email"
-                      value={editingCliente.email}
+                      value={editingCliente.email || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>CEP</Label>
+                    <Input
+                      value={editingCliente.cep || ""}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, cep: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Número</Label>
+                    <Input
+                      value={editingCliente.numero || ""}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, numero: e.target.value })}
                     />
                   </div>
                   <div className="col-span-2">
                     <Label>Endereço</Label>
                     <Input
-                      value={editingCliente.endereco}
+                      value={editingCliente.endereco || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, endereco: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Bairro</Label>
+                    <Input
+                      value={editingCliente.bairro || ""}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, bairro: e.target.value })}
                     />
                   </div>
                   <div>
                     <Label>Cidade</Label>
                     <Input
-                      value={editingCliente.cidade}
+                      value={editingCliente.cidade || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, cidade: e.target.value })}
                     />
                   </div>
                   <div>
                     <Label>Estado</Label>
                     <Input
-                      value={editingCliente.estado}
+                      value={editingCliente.estado || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, estado: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>CEP</Label>
-                    <Input
-                      value={editingCliente.cep}
-                      onChange={(e) => setEditingCliente({ ...editingCliente, cep: e.target.value })}
                     />
                   </div>
                   <div>
                     <Label>Status</Label>
                     <Select
-                      value={editingCliente.status}
+                      value={editingCliente.status || "ativo"}
                       onValueChange={(value) => setEditingCliente({ ...editingCliente, status: value })}
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ativo">Ativo</SelectItem>
                         <SelectItem value="pendente">Pendente</SelectItem>
@@ -345,16 +370,9 @@ const AdminClientes = () => {
                     </Select>
                   </div>
                   <div className="col-span-2">
-                    <Label>Data de Cadastro</Label>
-                    <Input
-                      value={editingCliente.dataCadastro}
-                      onChange={(e) => setEditingCliente({ ...editingCliente, dataCadastro: e.target.value })}
-                    />
-                  </div>
-                  <div className="col-span-2">
                     <Label>Observações</Label>
                     <Textarea
-                      value={editingCliente.observacoes}
+                      value={editingCliente.observacoes || ""}
                       onChange={(e) => setEditingCliente({ ...editingCliente, observacoes: e.target.value })}
                       rows={3}
                     />
@@ -363,12 +381,8 @@ const AdminClientes = () => {
               </div>
             </ScrollArea>
             <div className="flex gap-2 p-6 border-t border-border">
-              <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>
-                Cancelar
-              </Button>
-              <Button className="flex-1" onClick={handleSaveEdit}>
-                Salvar
-              </Button>
+              <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>Cancelar</Button>
+              <Button className="flex-1" onClick={handleSaveEdit}>Salvar</Button>
             </div>
           </motion.div>
         </div>

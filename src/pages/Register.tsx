@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 type ProfileType = "cliente" | "prestador" | "vidracaria" | null;
 type DocumentType = "cpf" | "cnpj";
-type VehicleType = "carro" | "moto";
+type VehicleType = "carro" | "moto" | "ambos";
 
 const qualificacoes = [
   { id: "box_padrao_aluminio", label: "Box Padrão Alumínio" },
@@ -42,7 +43,12 @@ const Register = () => {
 
   // Campos Cliente
   const [cpfCliente, setCpfCliente] = useState("");
+  const [cepCliente, setCepCliente] = useState("");
   const [enderecoCliente, setEnderecoCliente] = useState("");
+  const [numeroCliente, setNumeroCliente] = useState("");
+  const [bairroCliente, setBairroCliente] = useState("");
+  const [cidadeCliente, setCidadeCliente] = useState("");
+  const [estadoCliente, setEstadoCliente] = useState("");
 
   // Campos Prestador
   const [documentType, setDocumentType] = useState<DocumentType>("cpf");
@@ -51,6 +57,8 @@ const Register = () => {
   const [vehicleType, setVehicleType] = useState<VehicleType>("carro");
   const [cep, setCep] = useState("");
   const [enderecoPrestador, setEnderecoPrestador] = useState("");
+  const [numeroPrestador, setNumeroPrestador] = useState("");
+  const [bairroPrestador, setBairroPrestador] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
   const [selectedQualificacoes, setSelectedQualificacoes] = useState<string[]>([]);
@@ -58,9 +66,27 @@ const Register = () => {
   const [cnh, setCnh] = useState<File[]>([]);
 
   // Campos Vidraçaria
-  const [nomeEmpresa, setNomeEmpresa] = useState("");
+  const [razaoSocial, setRazaoSocial] = useState("");
+  const [nomeFantasia, setNomeFantasia] = useState("");
   const [cnpjVidracaria, setCnpjVidracaria] = useState("");
+  const [cepVidracaria, setCepVidracaria] = useState("");
   const [enderecoVidracaria, setEnderecoVidracaria] = useState("");
+  const [numeroVidracaria, setNumeroVidracaria] = useState("");
+  const [bairroVidracaria, setBairroVidracaria] = useState("");
+  const [cidadeVidracaria, setCidadeVidracaria] = useState("");
+  const [estadoVidracaria, setEstadoVidracaria] = useState("");
+
+  const uploadFiles = async (files: File[], bucket: string, folder: string): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of files) {
+      const fileName = `${folder}/${Date.now()}_${file.name}`;
+      const { data, error } = await supabase.storage.from(bucket).upload(fileName, file);
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+      urls.push(urlData.publicUrl);
+    }
+    return urls;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,16 +108,100 @@ const Register = () => {
 
     setIsLoading(true);
     
-    // Simula cadastro - depois conectar com backend
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    if (profileType === "prestador") {
-      toast.success("Cadastro enviado! Aguarde aprovação do administrador.");
-    } else {
-      toast.success("Cadastro realizado com sucesso!");
+    try {
+      // Criar usuário no auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`
+        }
+      });
+
+      if (authError) throw authError;
+
+      const userId = authData.user?.id;
+
+      if (profileType === "cliente") {
+        const { error } = await supabase.from("clientes").insert({
+          user_id: userId,
+          nome,
+          email,
+          telefone,
+          documento: cpfCliente,
+          tipo_documento: "cpf",
+          cep: cepCliente,
+          endereco: enderecoCliente,
+          numero: numeroCliente,
+          bairro: bairroCliente,
+          cidade: cidadeCliente,
+          estado: estadoCliente,
+          status: "ativo"
+        });
+        if (error) throw error;
+        toast.success("Cadastro realizado com sucesso!");
+      } 
+      else if (profileType === "prestador") {
+        // Upload fotos de obras
+        const fotosUrls = await uploadFiles(fotosObras, "prestadores-fotos", email.replace(/[@.]/g, "_"));
+        // Upload CNH
+        const cnhUrls = await uploadFiles(cnh, "prestadores-cnh", email.replace(/[@.]/g, "_"));
+
+        const { error } = await supabase.from("prestadores_servico").insert({
+          user_id: userId,
+          nome,
+          email,
+          telefone,
+          whatsapp: telefone,
+          documento: documentType === "cpf" ? cpfPrestador : cnpjPrestador,
+          tipo_documento: documentType,
+          tipo_veiculo: vehicleType,
+          cep,
+          endereco: enderecoPrestador,
+          numero: numeroPrestador,
+          bairro: bairroPrestador,
+          cidade,
+          estado,
+          qualificacoes: selectedQualificacoes,
+          fotos_obras: fotosUrls,
+          cnh_urls: cnhUrls,
+          status: "pendente"
+        });
+        if (error) throw error;
+        toast.success("Cadastro enviado! Aguarde aprovação do administrador.");
+      }
+      else if (profileType === "vidracaria") {
+        const { error } = await supabase.from("vidracarias").insert({
+          user_id: userId,
+          razao_social: razaoSocial,
+          nome_fantasia: nomeFantasia,
+          cnpj: cnpjVidracaria,
+          email,
+          telefone,
+          responsavel_nome: nome,
+          cep: cepVidracaria,
+          endereco: enderecoVidracaria,
+          numero: numeroVidracaria,
+          bairro: bairroVidracaria,
+          cidade: cidadeVidracaria,
+          estado: estadoVidracaria,
+          status: "pendente"
+        });
+        if (error) throw error;
+        toast.success("Cadastro enviado! Aguarde aprovação do administrador.");
+      }
+
+      navigate("/login");
+    } catch (error: any) {
+      console.error("Erro no cadastro:", error);
+      if (error.message?.includes("already registered")) {
+        toast.error("Este email já está cadastrado");
+      } else {
+        toast.error(error.message || "Erro ao cadastrar");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    navigate("/login");
   };
 
   const handleQualificacaoChange = (qualId: string, checked: boolean) => {
@@ -116,15 +226,28 @@ const Register = () => {
     setCnh(files);
   };
 
-  const buscarCep = async () => {
-    if (cep.length < 8) return;
+  const buscarCep = async (cepValue: string, tipo: "cliente" | "prestador" | "vidracaria") => {
+    if (cepValue.length < 8) return;
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`);
+      const response = await fetch(`https://viacep.com.br/ws/${cepValue.replace(/\D/g, '')}/json/`);
       const data = await response.json();
       if (!data.erro) {
-        setEnderecoPrestador(`${data.logradouro}, ${data.bairro}`);
-        setCidade(data.localidade);
-        setEstado(data.uf);
+        if (tipo === "cliente") {
+          setEnderecoCliente(data.logradouro || "");
+          setBairroCliente(data.bairro || "");
+          setCidadeCliente(data.localidade || "");
+          setEstadoCliente(data.uf || "");
+        } else if (tipo === "prestador") {
+          setEnderecoPrestador(data.logradouro || "");
+          setBairroPrestador(data.bairro || "");
+          setCidade(data.localidade || "");
+          setEstado(data.uf || "");
+        } else if (tipo === "vidracaria") {
+          setEnderecoVidracaria(data.logradouro || "");
+          setBairroVidracaria(data.bairro || "");
+          setCidadeVidracaria(data.localidade || "");
+          setEstadoVidracaria(data.uf || "");
+        }
       }
     } catch (error) {
       console.error("Erro ao buscar CEP:", error);
@@ -154,11 +277,6 @@ const Register = () => {
       color: "from-purple-500 to-purple-600"
     }
   ];
-
-  const getTotalSteps = () => {
-    if (profileType === "prestador") return 3;
-    return 1;
-  };
 
   const canProceed = () => {
     if (profileType === "prestador") {
@@ -342,18 +460,78 @@ const Register = () => {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-white/90">Endereço</label>
+                      <label className="text-sm font-medium text-white/90">CEP</label>
                       <div className="relative">
                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
                         <Input
                           type="text"
-                          placeholder="Rua, número, bairro, cidade"
-                          value={enderecoCliente}
-                          onChange={(e) => setEnderecoCliente(e.target.value)}
+                          placeholder="00000-000"
+                          value={cepCliente}
+                          onChange={(e) => setCepCliente(e.target.value)}
+                          onBlur={() => buscarCep(cepCliente, "cliente")}
                           className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
                           required
                         />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-sm font-medium text-white/90">Endereço</label>
+                        <Input
+                          type="text"
+                          placeholder="Rua"
+                          value={enderecoCliente}
+                          onChange={(e) => setEnderecoCliente(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Nº</label>
+                        <Input
+                          type="text"
+                          placeholder="123"
+                          value={numeroCliente}
+                          onChange={(e) => setNumeroCliente(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Bairro</label>
+                        <Input
+                          type="text"
+                          placeholder="Bairro"
+                          value={bairroCliente}
+                          onChange={(e) => setBairroCliente(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Cidade</label>
+                        <Input
+                          type="text"
+                          placeholder="Cidade"
+                          value={cidadeCliente}
+                          onChange={(e) => setCidadeCliente(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Estado</label>
+                      <Input
+                        type="text"
+                        placeholder="UF"
+                        value={estadoCliente}
+                        onChange={(e) => setEstadoCliente(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        required
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-white/90">Senha</label>
@@ -400,14 +578,41 @@ const Register = () => {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-white/90">Nome da empresa</label>
+                      <label className="text-sm font-medium text-white/90">Razão Social</label>
                       <div className="relative">
                         <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
                         <Input
                           type="text"
-                          placeholder="Nome fantasia"
-                          value={nomeEmpresa}
-                          onChange={(e) => setNomeEmpresa(e.target.value)}
+                          placeholder="Razão Social"
+                          value={razaoSocial}
+                          onChange={(e) => setRazaoSocial(e.target.value)}
+                          className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Nome Fantasia</label>
+                      <div className="relative">
+                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                        <Input
+                          type="text"
+                          placeholder="Nome Fantasia"
+                          value={nomeFantasia}
+                          onChange={(e) => setNomeFantasia(e.target.value)}
+                          className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">CNPJ</label>
+                      <div className="relative">
+                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                        <Input
+                          type="text"
+                          placeholder="00.000.000/0000-00"
+                          value={cnpjVidracaria}
+                          onChange={(e) => setCnpjVidracaria(e.target.value)}
                           className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
                           required
                         />
@@ -442,32 +647,78 @@ const Register = () => {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-white/90">CNPJ</label>
+                      <label className="text-sm font-medium text-white/90">CEP</label>
                       <div className="relative">
-                        <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
                         <Input
                           type="text"
-                          placeholder="00.000.000/0000-00"
-                          value={cnpjVidracaria}
-                          onChange={(e) => setCnpjVidracaria(e.target.value)}
+                          placeholder="00000-000"
+                          value={cepVidracaria}
+                          onChange={(e) => setCepVidracaria(e.target.value)}
+                          onBlur={() => buscarCep(cepVidracaria, "vidracaria")}
                           className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
                           required
                         />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-white/90">Endereço da vidraçaria</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-sm font-medium text-white/90">Endereço</label>
                         <Input
                           type="text"
-                          placeholder="Rua, número, bairro, cidade"
+                          placeholder="Rua"
                           value={enderecoVidracaria}
                           onChange={(e) => setEnderecoVidracaria(e.target.value)}
-                          className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
                           required
                         />
                       </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Nº</label>
+                        <Input
+                          type="text"
+                          placeholder="123"
+                          value={numeroVidracaria}
+                          onChange={(e) => setNumeroVidracaria(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Bairro</label>
+                        <Input
+                          type="text"
+                          placeholder="Bairro"
+                          value={bairroVidracaria}
+                          onChange={(e) => setBairroVidracaria(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Cidade</label>
+                        <Input
+                          type="text"
+                          placeholder="Cidade"
+                          value={cidadeVidracaria}
+                          onChange={(e) => setCidadeVidracaria(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Estado</label>
+                      <Input
+                        type="text"
+                        placeholder="UF"
+                        value={estadoVidracaria}
+                        onChange={(e) => setEstadoVidracaria(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        required
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-white/90">Senha</label>
@@ -633,6 +884,17 @@ const Register = () => {
                           <Bike className="w-5 h-5" />
                           Moto
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setVehicleType("ambos")}
+                          className={`flex-1 py-3 rounded-lg border transition-colors flex items-center justify-center gap-2 ${
+                            vehicleType === "ambos" 
+                              ? "bg-white text-primary border-white" 
+                              : "bg-white/10 text-white border-white/20"
+                          }`}
+                        >
+                          Ambos
+                        </button>
                       </div>
                     </div>
 
@@ -646,26 +908,48 @@ const Register = () => {
                           placeholder="00000-000"
                           value={cep}
                           onChange={(e) => setCep(e.target.value)}
-                          onBlur={buscarCep}
+                          onBlur={() => buscarCep(cep, "prestador")}
                           className="pl-12 bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
                           required
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-white/90">Endereço</label>
-                      <Input
-                        type="text"
-                        placeholder="Rua, número, bairro"
-                        value={enderecoPrestador}
-                        onChange={(e) => setEnderecoPrestador(e.target.value)}
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
-                        required
-                      />
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2 space-y-1">
+                        <label className="text-sm font-medium text-white/90">Endereço</label>
+                        <Input
+                          type="text"
+                          placeholder="Rua"
+                          value={enderecoPrestador}
+                          onChange={(e) => setEnderecoPrestador(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Nº</label>
+                        <Input
+                          type="text"
+                          placeholder="123"
+                          value={numeroPrestador}
+                          onChange={(e) => setNumeroPrestador(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-white/90">Bairro</label>
+                        <Input
+                          type="text"
+                          placeholder="Bairro"
+                          value={bairroPrestador}
+                          onChange={(e) => setBairroPrestador(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        />
+                      </div>
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-white/90">Cidade</label>
                         <Input
@@ -677,17 +961,18 @@ const Register = () => {
                           required
                         />
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-white/90">Estado</label>
-                        <Input
-                          type="text"
-                          placeholder="UF"
-                          value={estado}
-                          onChange={(e) => setEstado(e.target.value)}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
-                          required
-                        />
-                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Estado</label>
+                      <Input
+                        type="text"
+                        placeholder="UF"
+                        value={estado}
+                        onChange={(e) => setEstado(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                        required
+                      />
                     </div>
 
                     <div className="space-y-1">
@@ -766,12 +1051,58 @@ const Register = () => {
                 {/* ========== PRESTADOR - ETAPA 3: DOCUMENTOS E FOTOS ========== */}
                 {profileType === "prestador" && step === 3 && (
                   <>
-                    {/* CNH */}
+                    <p className="text-white/70 text-sm mb-4">
+                      Envie fotos das suas obras e sua CNH para validação:
+                    </p>
+
+                    {/* Upload de fotos de obras */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-white/90">
-                        CNH (frente e verso ou PDF)
+                        Fotos de obras realizadas (mínimo 5, máximo 10)
                       </label>
-                      <div className="relative">
+                      <div className="border-2 border-dashed border-white/30 rounded-lg p-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleFotosObrasChange}
+                          className="hidden"
+                          id="fotos-obras"
+                        />
+                        <label
+                          htmlFor="fotos-obras"
+                          className="flex flex-col items-center gap-2 cursor-pointer"
+                        >
+                          <Camera className="w-8 h-8 text-white/50" />
+                          <span className="text-white/70 text-sm">
+                            Clique para selecionar fotos
+                          </span>
+                        </label>
+                      </div>
+                      {fotosObras.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {fotosObras.map((foto, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded text-white text-xs"
+                            >
+                              <CheckCircle className="w-3 h-3 text-green-400" />
+                              {foto.name.slice(0, 15)}...
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-white/50 text-xs">
+                        {fotosObras.length}/10 fotos selecionadas
+                      </p>
+                    </div>
+
+                    {/* Upload de CNH */}
+                    <div className="space-y-2 mt-4">
+                      <label className="text-sm font-medium text-white/90">
+                        CNH (foto frente e verso ou PDF)
+                      </label>
+                      <div className="border-2 border-dashed border-white/30 rounded-lg p-4">
                         <input
                           type="file"
                           accept="image/*,.pdf"
@@ -782,98 +1113,67 @@ const Register = () => {
                         />
                         <label
                           htmlFor="cnh-upload"
-                          className="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-white/30 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors"
+                          className="flex flex-col items-center gap-2 cursor-pointer"
                         >
-                          <FileText className="w-6 h-6 text-white/70" />
-                          <span className="text-white/70">
-                            {cnh.length > 0 
-                              ? `${cnh.length} arquivo(s) selecionado(s)` 
-                              : "Clique para enviar CNH"}
+                          <FileText className="w-8 h-8 text-white/50" />
+                          <span className="text-white/70 text-sm">
+                            Clique para enviar CNH
                           </span>
                         </label>
                       </div>
                       {cnh.length > 0 && (
-                        <div className="flex items-center gap-2 text-green-400 text-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          CNH enviada
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Fotos de obras */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/90">
-                        Fotos de obras realizadas (5 a 10 fotos)
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={handleFotosObrasChange}
-                          className="hidden"
-                          id="fotos-upload"
-                        />
-                        <label
-                          htmlFor="fotos-upload"
-                          className="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-white/30 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors"
-                        >
-                          <Camera className="w-6 h-6 text-white/70" />
-                          <span className="text-white/70">
-                            Clique para enviar fotos ({fotosObras.length}/10)
+                        <div className="flex items-center gap-2 mt-2">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          <span className="text-white text-sm">
+                            {cnh.length} arquivo(s) selecionado(s)
                           </span>
-                        </label>
-                      </div>
-                      {fotosObras.length > 0 && (
-                        <div className="grid grid-cols-5 gap-2 mt-2">
-                          {fotosObras.map((foto, index) => (
-                            <div
-                              key={index}
-                              className="aspect-square rounded-lg bg-white/10 flex items-center justify-center overflow-hidden"
-                            >
-                              <img
-                                src={URL.createObjectURL(foto)}
-                                alt={`Obra ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
                         </div>
                       )}
-                      <p className="text-white/50 text-xs">
-                        Mínimo 5 fotos, máximo 10 fotos
+                    </div>
+
+                    <div className="bg-white/10 rounded-lg p-4 mt-4">
+                      <p className="text-white/90 text-sm font-medium mb-2">
+                        ⚠️ Importante
+                      </p>
+                      <p className="text-white/70 text-xs">
+                        Seu cadastro será analisado por nossa equipe. Após aprovação,
+                        você receberá um e-mail de confirmação e poderá começar a receber
+                        solicitações de serviço.
                       </p>
                     </div>
 
-                    <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-3 mt-4">
-                      <p className="text-yellow-200 text-sm">
-                        ⚠️ Após o cadastro, seu perfil será analisado pela nossa equipe. 
-                        Você receberá uma notificação quando for aprovado.
-                      </p>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-white text-primary hover:bg-white/90 mt-4" 
+                    <Button
+                      type="submit"
+                      className="w-full bg-white text-primary hover:bg-white/90 mt-4"
                       size="lg"
-                      disabled={isLoading || fotosObras.length < 5 || cnh.length === 0}
+                      disabled={isLoading}
                     >
-                      {isLoading ? "Enviando cadastro..." : "Enviar cadastro para análise"}
+                      {isLoading ? "Enviando cadastro..." : "Enviar Cadastro"}
                     </Button>
                   </>
                 )}
               </form>
-
-              {profileType !== "prestador" && (
-                <p className="text-center text-xs text-white/50 mt-4">
-                  Ao cadastrar, você concorda com nossos{" "}
-                  <span className="text-white/70 hover:underline cursor-pointer">Termos de Uso</span> e{" "}
-                  <span className="text-white/70 hover:underline cursor-pointer">Política de Privacidade</span>
-                </p>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
+      </motion.div>
+
+      {/* Footer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="px-6 pb-8 text-center"
+      >
+        <p className="text-white/60 text-sm">
+          Já tem uma conta?{" "}
+          <button
+            onClick={() => navigate("/login")}
+            className="text-white font-semibold hover:underline"
+          >
+            Entrar
+          </button>
+        </p>
       </motion.div>
     </div>
   );
