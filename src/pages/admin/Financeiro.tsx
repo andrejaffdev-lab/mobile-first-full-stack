@@ -4,6 +4,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, CreditCard, Wallet, Pi
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 
 interface Transaction {
@@ -118,9 +119,9 @@ const AdminFinanceiro = () => {
   }, []);
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-24">
+    <div className="mobile-container h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-hero-gradient px-6 pt-12 pb-8 rounded-b-[2rem]">
+      <div className="bg-hero-gradient px-6 pt-12 pb-8 rounded-b-[2rem] shrink-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -141,8 +142,9 @@ const AdminFinanceiro = () => {
         </motion.div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="px-6 -mt-4">
+      <ScrollArea className="flex-1">
+        {/* Summary Cards */}
+        <div className="px-6 -mt-4 pb-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -416,7 +418,8 @@ const AdminFinanceiro = () => {
             </div>
           )}
         </motion.div>
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 };
