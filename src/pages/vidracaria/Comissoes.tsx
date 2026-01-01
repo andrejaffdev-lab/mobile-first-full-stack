@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -12,26 +12,104 @@ import {
   Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Financeiro {
+  id: string;
+  data_pagamento: string | null;
+  valor: number;
+  status: string | null;
+  descricao: string | null;
+  clientes: {
+    nome: string;
+  } | null;
+}
 
 const Comissoes = () => {
   const navigate = useNavigate();
   const [periodo, setPeriodo] = useState<"semana" | "mes" | "ano">("mes");
+  const [financeiros, setFinanceiros] = useState<Financeiro[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [resumo, setResumo] = useState({
+    total: 0,
+    pendente: 0,
+    clientesAtivos: 0,
+    taxaConversao: "0%",
+  });
 
-  const resumo = {
-    total: "R$ 1.890,00",
-    pendente: "R$ 320,00",
-    clientesAtivos: 45,
-    taxaConversao: "78%",
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        // Buscar vidraçaria
+        const { data: vidracaria } = await supabase
+          .from('vidracarias')
+          .select('id, total_indicacoes')
+          .eq('user_id', user.id)
+          .single();
+
+        if (!vidracaria) return;
+
+        // Buscar registros financeiros
+        const { data: financeirosData, error } = await supabase
+          .from('financeiro')
+          .select(`
+            id,
+            data_pagamento,
+            valor,
+            status,
+            descricao,
+            clientes (
+              nome
+            )
+          `)
+          .eq('vidracaria_id', vidracaria.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) {
+          console.error('Erro ao buscar financeiro:', error);
+        } else {
+          setFinanceiros(financeirosData || []);
+          
+          // Calcular resumo
+          const total = financeirosData?.reduce((acc, f) => acc + (f.valor || 0), 0) || 0;
+          const pendente = financeirosData?.filter(f => f.status === 'pendente').reduce((acc, f) => acc + (f.valor || 0), 0) || 0;
+          
+          setResumo({
+            total,
+            pendente,
+            clientesAtivos: vidracaria.total_indicacoes || 0,
+            taxaConversao: "78%",
+          });
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
-  const historico = [
-    { id: "001", data: "14/01/2026", cliente: "Ana Paula", valor: "R$ 50,00", status: "pago" },
-    { id: "002", data: "12/01/2026", cliente: "Roberto Carlos", valor: "R$ 50,00", status: "pago" },
-    { id: "003", data: "10/01/2026", cliente: "Maria José", valor: "R$ 50,00", status: "pendente" },
-    { id: "004", data: "08/01/2026", cliente: "Fernando Lima", valor: "R$ 50,00", status: "pago" },
-    { id: "005", data: "05/01/2026", cliente: "Carla Santos", valor: "R$ 50,00", status: "pago" },
-    { id: "006", data: "03/01/2026", cliente: "José Oliveira", valor: "R$ 50,00", status: "pendente" },
-  ];
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Sem data';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
 
   const periodos = [
     { key: "semana", label: "Semana" },
@@ -41,6 +119,8 @@ const Comissoes = () => {
 
   const graficoData = [30, 45, 60, 40, 75, 55, 80];
   const diasSemana = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+  const currentMonth = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-8">
@@ -90,10 +170,10 @@ const Comissoes = () => {
         >
           <div className="flex items-center gap-2 mb-1">
             <Calendar className="w-4 h-4 opacity-70" />
-            <span className="text-sm opacity-70">Janeiro 2026</span>
+            <span className="text-sm opacity-70 capitalize">{currentMonth}</span>
           </div>
           <div className="flex items-baseline gap-2 mb-4">
-            <span className="text-3xl font-bold font-display">{resumo.total}</span>
+            <span className="text-3xl font-bold font-display">{formatCurrency(resumo.total)}</span>
             <span className="text-sm opacity-70 flex items-center gap-1">
               <TrendingUp className="w-4 h-4" /> +8%
             </span>
@@ -101,7 +181,7 @@ const Comissoes = () => {
           <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
             <div>
               <p className="text-xs opacity-70">Pendente</p>
-              <p className="font-semibold">{resumo.pendente}</p>
+              <p className="font-semibold">{formatCurrency(resumo.pendente)}</p>
             </div>
             <div>
               <p className="text-xs opacity-70">Clientes</p>
@@ -154,41 +234,49 @@ const Comissoes = () => {
         >
           <h3 className="font-semibold text-foreground mb-4">Histórico</h3>
           <div className="space-y-3">
-            {historico.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  item.status === "pago" 
-                    ? "bg-success/10" 
-                    : "bg-warning/10"
-                }`}>
-                  {item.status === "pago" ? (
-                    <CheckCircle2 className="w-5 h-5 text-success" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-warning" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{item.cliente}</p>
-                  <p className="text-sm text-muted-foreground">
-                    #{item.id} • {item.data}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-foreground">{item.valor}</p>
-                  <p className={`text-xs ${
-                    item.status === "pago" ? "text-success" : "text-warning"
+            {financeiros.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhum registro encontrado
+              </p>
+            ) : (
+              financeiros.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.05 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    item.status === "concluido" || item.status === "aprovado"
+                      ? "bg-success/10" 
+                      : "bg-warning/10"
                   }`}>
-                    {item.status === "pago" ? "Pago" : "Pendente"}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+                    {item.status === "concluido" || item.status === "aprovado" ? (
+                      <CheckCircle2 className="w-5 h-5 text-success" />
+                    ) : (
+                      <Clock className="w-5 h-5 text-warning" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">
+                      {item.clientes?.nome || item.descricao || 'Comissão'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(item.data_pagamento)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-foreground">{formatCurrency(item.valor)}</p>
+                    <p className={`text-xs ${
+                      item.status === "concluido" || item.status === "aprovado" ? "text-success" : "text-warning"
+                    }`}>
+                      {item.status === "concluido" || item.status === "aprovado" ? "Pago" : "Pendente"}
+                    </p>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>

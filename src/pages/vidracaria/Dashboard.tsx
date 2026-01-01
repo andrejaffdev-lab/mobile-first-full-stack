@@ -3,19 +3,125 @@ import { motion } from "framer-motion";
 import { Bell, Users, DollarSign, UserPlus, Upload, TrendingUp, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface Vidracaria {
+  id: string;
+  nome_fantasia: string | null;
+  razao_social: string;
+  total_indicacoes: number | null;
+  valor_comissoes: number | null;
+}
+
+interface Cliente {
+  id: string;
+  nome: string;
+  status: string | null;
+  created_at: string;
+}
 
 const VidracariaDashboard = () => {
   const navigate = useNavigate();
+  const [vidracaria, setVidracaria] = useState<Vidracaria | null>(null);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        // Buscar dados da vidraçaria
+        const { data: vidracariaData, error: vidracariaError } = await supabase
+          .from('vidracarias')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (vidracariaError) {
+          console.error('Erro ao buscar vidraçaria:', vidracariaError);
+        } else {
+          setVidracaria(vidracariaData);
+        }
+
+        // Buscar clientes indicados pela vidraçaria
+        if (vidracariaData) {
+          const { data: ordensData, error: ordensError } = await supabase
+            .from('ordens_servico')
+            .select(`
+              clientes (
+                id,
+                nome,
+                status,
+                created_at
+              )
+            `)
+            .eq('vidracaria_id', vidracariaData.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+          if (ordensError) {
+            console.error('Erro ao buscar clientes:', ordensError);
+          } else {
+            // Extrair clientes únicos
+            const clientesUnicos = ordensData
+              ?.filter(o => o.clientes)
+              .map(o => o.clientes as Cliente)
+              .filter((cliente, index, self) => 
+                index === self.findIndex(c => c.id === cliente.id)
+              ) || [];
+            setClientes(clientesUnicos);
+          }
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const formatCurrency = (value: number | null) => {
+    if (value === null || value === undefined) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Hoje';
+    if (diffDays === 1) return 'Há 1 dia';
+    if (diffDays < 7) return `Há ${diffDays} dias`;
+    if (diffDays < 30) return `Há ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`;
+    return `Há ${Math.floor(diffDays / 30)} mês${Math.floor(diffDays / 30) > 1 ? 'es' : ''}`;
+  };
+
+  const getStatusLabel = (status: string | null) => {
+    switch (status) {
+      case 'ativo': return 'Ativo';
+      case 'pendente': return 'Pendente';
+      case 'inativo': return 'Inativo';
+      default: return 'Pendente';
+    }
+  };
 
   const stats = [
-    { label: "Clientes Indicados", value: "45", icon: Users, color: "bg-primary/10 text-primary" },
-    { label: "Comissões do Mês", value: "R$ 1.890", icon: DollarSign, color: "bg-success/10 text-success" },
-  ];
-
-  const recentClients = [
-    { name: "Ana Paula", date: "Há 2 dias", status: "Ativo" },
-    { name: "Roberto Carlos", date: "Há 5 dias", status: "Ativo" },
-    { name: "Maria José", date: "Há 1 semana", status: "Pendente" },
+    { label: "Clientes Indicados", value: (vidracaria?.total_indicacoes || 0).toString(), icon: Users, color: "bg-primary/10 text-primary" },
+    { label: "Comissões do Mês", value: formatCurrency(vidracaria?.valor_comissoes || 0), icon: DollarSign, color: "bg-success/10 text-success" },
   ];
 
   return (
@@ -30,7 +136,7 @@ const VidracariaDashboard = () => {
           <div>
             <p className="text-white/70 text-sm">Bem-vindo,</p>
             <h1 className="text-2xl font-bold text-white font-display">
-              Vidraçaria Premium
+              {loading ? 'Carregando...' : (vidracaria?.nome_fantasia || vidracaria?.razao_social || 'Vidraçaria')}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -78,7 +184,11 @@ const VidracariaDashboard = () => {
           transition={{ delay: 0.2 }}
           className="grid grid-cols-2 gap-4 mb-6"
         >
-          <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+          <Button 
+            variant="outline" 
+            className="h-auto py-4 flex-col gap-2"
+            onClick={() => navigate('/vidracaria/cadastrar-cliente')}
+          >
             <UserPlus className="w-6 h-6" />
             <span className="text-sm">Cadastrar Cliente</span>
           </Button>
@@ -98,36 +208,47 @@ const VidracariaDashboard = () => {
             <h2 className="text-lg font-semibold text-foreground font-display">
               Indicações Recentes
             </h2>
-            <button className="text-sm text-primary font-medium">Ver todas</button>
+            <button 
+              className="text-sm text-primary font-medium"
+              onClick={() => navigate('/vidracaria/clientes')}
+            >
+              Ver todas
+            </button>
           </div>
 
           <div className="space-y-3">
-            {recentClients.map((client, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{client.name}</p>
-                  <p className="text-sm text-muted-foreground">{client.date}</p>
-                </div>
-                <span
-                  className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    client.status === "Ativo"
-                      ? "bg-success/10 text-success"
-                      : "bg-warning/10 text-warning"
-                  }`}
+            {clientes.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhuma indicação encontrada
+              </p>
+            ) : (
+              clientes.map((cliente, index) => (
+                <motion.div
+                  key={cliente.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
                 >
-                  {client.status}
-                </span>
-              </motion.div>
-            ))}
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{cliente.nome}</p>
+                    <p className="text-sm text-muted-foreground">{formatTimeAgo(cliente.created_at)}</p>
+                  </div>
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      cliente.status === "ativo"
+                        ? "bg-success/10 text-success"
+                        : "bg-warning/10 text-warning"
+                    }`}
+                  >
+                    {getStatusLabel(cliente.status)}
+                  </span>
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
 

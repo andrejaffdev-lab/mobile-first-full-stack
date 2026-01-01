@@ -2,32 +2,105 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bell, MapPin, DollarSign, ClipboardList, Clock, MessageCircle } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface Prestador {
+  id: string;
+  nome: string;
+  valor_ganhos: number | null;
+}
+
+interface OrdemServico {
+  id: string;
+  numero_ordem: string | null;
+  status: string | null;
+  valor_total: number | null;
+  observacoes: string | null;
+  clientes: {
+    nome: string;
+    endereco: string | null;
+    bairro: string | null;
+  } | null;
+}
 
 const PrestadorDashboard = () => {
   const navigate = useNavigate();
+  const [prestador, setPrestador] = useState<Prestador | null>(null);
+  const [ordens, setOrdens] = useState<OrdemServico[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        // Buscar dados do prestador
+        const { data: prestadorData, error: prestadorError } = await supabase
+          .from('prestadores_servico')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (prestadorError) {
+          console.error('Erro ao buscar prestador:', prestadorError);
+        } else {
+          setPrestador(prestadorData);
+        }
+
+        // Buscar ordens de serviço pendentes
+        if (prestadorData) {
+          const { data: ordensData, error: ordensError } = await supabase
+            .from('ordens_servico')
+            .select(`
+              id,
+              numero_ordem,
+              status,
+              valor_total,
+              observacoes,
+              clientes (
+                nome,
+                endereco,
+                bairro
+              )
+            `)
+            .eq('prestador_id', prestadorData.id)
+            .in('status', ['pendente', 'andamento'])
+            .order('data_solicitacao', { ascending: false })
+            .limit(5);
+
+          if (ordensError) {
+            console.error('Erro ao buscar ordens:', ordensError);
+          } else {
+            setOrdens(ordensData || []);
+          }
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const formatCurrency = (value: number | null) => {
+    if (value === null || value === undefined) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
 
   const stats = [
-    { label: "Serviços Pendentes", value: "3", icon: Clock, color: "bg-warning/10 text-warning" },
-    { label: "Ganhos do Mês", value: "R$ 2.400", icon: DollarSign, color: "bg-success/10 text-success" },
-  ];
-
-  const pendingServices = [
-    {
-      id: "1",
-      client: "Maria Santos",
-      address: "Rua das Flores, 123 - Centro",
-      service: "Manutenção Preventiva",
-      value: "R$ 200,00",
-      distance: "2.5 km",
-    },
-    {
-      id: "2",
-      client: "Carlos Oliveira",
-      address: "Av. Brasil, 456 - Jardins",
-      service: "Manutenção + Película",
-      value: "R$ 455,00",
-      distance: "4.8 km",
-    },
+    { label: "Serviços Pendentes", value: ordens.length.toString(), icon: Clock, color: "bg-warning/10 text-warning" },
+    { label: "Ganhos do Mês", value: formatCurrency(prestador?.valor_ganhos || 0), icon: DollarSign, color: "bg-success/10 text-success" },
   ];
 
   return (
@@ -42,7 +115,7 @@ const PrestadorDashboard = () => {
           <div>
             <p className="text-white/70 text-sm">Bem-vindo,</p>
             <h1 className="text-2xl font-bold text-white font-display">
-              Pedro Montador
+              {loading ? 'Carregando...' : (prestador?.nome || 'Prestador')}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -98,41 +171,50 @@ const PrestadorDashboard = () => {
           </div>
 
           <div className="space-y-4">
-            {pendingServices.map((service, index) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="premium-card"
-                onClick={() => navigate(`/prestador/servico/${service.id}`)}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground">{service.client}</h3>
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{service.address}</span>
+            {ordens.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhum serviço pendente
+              </p>
+            ) : (
+              ordens.map((ordem, index) => (
+                <motion.div
+                  key={ordem.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="premium-card"
+                  onClick={() => navigate(`/prestador/servico/${ordem.id}`)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        {ordem.clientes?.nome || 'Cliente'}
+                      </h3>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>
+                          {ordem.clientes?.endereco 
+                            ? `${ordem.clientes.endereco}${ordem.clientes.bairro ? ` - ${ordem.clientes.bairro}` : ''}`
+                            : 'Endereço não informado'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-                    {service.distance}
-                  </span>
-                </div>
 
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <div className="flex items-center gap-2">
-                    <ClipboardList className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {service.service}
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {ordem.numero_ordem || 'Ordem de Serviço'}
+                      </span>
+                    </div>
+                    <span className="font-bold text-primary font-display">
+                      {formatCurrency(ordem.valor_total)}
                     </span>
                   </div>
-                  <span className="font-bold text-primary font-display">
-                    {service.value}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>
