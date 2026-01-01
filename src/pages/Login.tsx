@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -18,15 +18,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-hero-gradient flex flex-col">
-      {/* Header com Logo */}
+    <div className="min-h-screen bg-hero-gradient flex flex-col relative">
+      {/* Header com Logo - subido 25px */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex-1 flex flex-col items-center justify-center px-6 pt-12"
+        className="flex-1 flex flex-col items-center justify-center px-6 pt-6 -mt-6"
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -46,14 +46,14 @@ const Login = () => {
         </div>
       </motion.div>
 
-      {/* Formulário */}
+      {/* Formulário - subido */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="bg-white rounded-t-[2rem] px-6 py-8 shadow-xl"
+        className="bg-white rounded-t-[2rem] px-6 py-6 shadow-xl"
       >
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">E-mail</label>
             <div className="relative">
@@ -119,11 +119,23 @@ const Login = () => {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-xs text-muted-foreground mt-4">
           Ao entrar, você concorda com nossos{" "}
           <span className="text-primary">Termos de Uso</span> e{" "}
           <span className="text-primary">Política de Privacidade</span>
         </p>
+
+        {/* Leia mais - seta para landing page */}
+        <motion.button
+          onClick={() => navigate("/sobre")}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="w-full flex flex-col items-center mt-6 pb-2 text-muted-foreground hover:text-primary transition-colors"
+        >
+          <span className="text-xs mb-1">leia mais</span>
+          <ChevronDown className="w-6 h-6 animate-bounce" />
+        </motion.button>
       </motion.div>
     </div>
   );
