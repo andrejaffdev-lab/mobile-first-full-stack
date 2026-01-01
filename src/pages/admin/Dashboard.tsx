@@ -7,10 +7,10 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const stats = [
-    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary", link: "/vidracaria/clientes" },
-    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success", link: "/prestador/tarefas" },
-    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning", link: "/dashboard/vidracaria" },
-    { label: "Ordem de Serviços", value: "89", icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/orders" },
+    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary", link: "/admin/clientes" },
+    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success", link: "/admin/prestadores" },
+    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning", link: "/admin/vidracarias" },
+    { label: "Ordem de Serviços", value: "89", icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/admin/ordens" },
   ];
 
   const monthlyData = [
