@@ -33,7 +33,7 @@ const ProfileVidracaria = () => {
   ];
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-8">
+    <div className="mobile-container min-h-screen bg-background pb-8 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">

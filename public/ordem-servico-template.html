@@ -12,21 +12,19 @@
       --success-color: #198754;
       --warning-color: #ffc107;
       --danger-color: #dc3545;
+      --purple-color: #6f42c1;
       --light-bg: #f8f9fa;
       --border-color: #dee2e6;
     }
-    
     body {
       background-color: var(--light-bg);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    
     .main-container {
       max-width: 900px;
       margin: 0 auto;
       padding: 20px;
     }
-    
     .section-card {
       background: white;
       border-radius: 12px;
@@ -34,7 +32,6 @@
       margin-bottom: 20px;
       overflow: hidden;
     }
-    
     .section-header {
       background: linear-gradient(135deg, var(--primary-color), #0b5ed7);
       color: white;
@@ -42,216 +39,60 @@
       font-weight: 600;
       font-size: 1.1rem;
     }
-    
-    .section-header.success {
-      background: linear-gradient(135deg, var(--success-color), #157347);
-    }
-    
-    .section-header.warning {
-      background: linear-gradient(135deg, var(--warning-color), #cc9a06);
-      color: #000;
-    }
-    
-    .section-body {
-      padding: 20px;
-    }
-    
-    .form-label {
-      font-weight: 500;
-      color: #495057;
-      margin-bottom: 5px;
-    }
-    
-    .form-control, .form-select {
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      padding: 10px 15px;
-    }
-    
-    .form-control:focus, .form-select:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
-    }
-    
-    .btn-route {
-      background: linear-gradient(135deg, #17a2b8, #138496);
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 500;
-    }
-    
-    .btn-route:hover {
-      background: linear-gradient(135deg, #138496, #117a8b);
-      color: white;
-    }
-    
-    .checklist-item {
-      background: var(--light-bg);
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 15px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .checklist-item.completed {
-      background: #d1e7dd;
-      border-color: var(--success-color);
-    }
-    
-    .checklist-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    
-    .checklist-number {
-      background: var(--primary-color);
-      color: white;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    
-    .checklist-item.completed .checklist-number {
-      background: var(--success-color);
-    }
-    
-    .photo-upload {
-      border: 2px dashed var(--border-color);
-      border-radius: 10px;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-      background: white;
-    }
-    
-    .photo-upload:hover {
-      border-color: var(--primary-color);
-      background: rgba(13, 110, 253, 0.05);
-    }
-    
-    .photo-upload i {
-      font-size: 2rem;
-      color: #6c757d;
-    }
-    
-    .photo-preview {
-      max-width: 100%;
-      max-height: 200px;
-      border-radius: 8px;
-      margin-top: 10px;
-      display: none;
-    }
-    
-    .signature-pad {
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      background: white;
-      width: 100%;
-      height: 150px;
-    }
-    
-    .btn-generate {
-      background: linear-gradient(135deg, var(--success-color), #157347);
-      border: none;
-      color: white;
-      padding: 15px 30px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-    
-    .btn-generate:hover {
-      background: linear-gradient(135deg, #157347, #146c43);
-      color: white;
-    }
-    
-    .star-rating {
-      display: flex;
-      gap: 5px;
-    }
-    
-    .star-rating i {
-      font-size: 2rem;
-      color: #dee2e6;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    
-    .star-rating i:hover,
-    .star-rating i.active {
-      color: var(--warning-color);
-    }
-    
-    .divider {
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary-color), var(--success-color));
-      border-radius: 2px;
-      margin: 30px 0;
-    }
-    
-    .status-badge {
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-    
-    .status-pending {
-      background: #fff3cd;
-      color: #856404;
-    }
-    
-    .status-completed {
-      background: #d1e7dd;
-      color: #0f5132;
-    }
-    
-    .form-check-input:checked {
-      background-color: var(--success-color);
-      border-color: var(--success-color);
-    }
-    
-    .form-check-label {
-      font-weight: 500;
-    }
-    
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-      .section-card {
-        break-inside: avoid;
-      }
-    }
+    .section-header.success { background: linear-gradient(135deg, var(--success-color), #157347); }
+    .section-header.warning { background: linear-gradient(135deg, var(--warning-color), #cc9a06); color: #000; }
+    .section-header.purple { background: linear-gradient(135deg, var(--purple-color), #5a32a3); }
+    .section-body { padding: 20px; }
+    .form-label { font-weight: 500; color: #495057; margin-bottom: 5px; }
+    .form-control, .form-select { border-radius: 8px; border: 1px solid var(--border-color); padding: 10px 15px; }
+    .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); }
+    .btn-route { background: linear-gradient(135deg, #17a2b8, #138496); border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 500; }
+    .btn-route:hover { background: linear-gradient(135deg, #138496, #117a8b); color: white; }
+    .checklist-item { background: var(--light-bg); border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+    .checklist-item.completed { background: #d1e7dd; border-color: var(--success-color); }
+    .checklist-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .checklist-number { background: var(--primary-color); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; }
+    .checklist-item.completed .checklist-number { background: var(--success-color); }
+    .photo-upload { border: 2px dashed var(--border-color); border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; background: white; }
+    .photo-upload:hover { border-color: var(--primary-color); background: rgba(13, 110, 253, 0.05); }
+    .photo-upload i { font-size: 2rem; color: #6c757d; }
+    .photo-preview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; }
+    .signature-pad { border: 2px solid var(--border-color); border-radius: 10px; background: white; width: 100%; height: 150px; }
+    .btn-generate { background: linear-gradient(135deg, var(--success-color), #157347); border: none; color: white; padding: 15px 30px; border-radius: 10px; font-weight: 600; font-size: 1.1rem; }
+    .btn-generate:hover { background: linear-gradient(135deg, #157347, #146c43); color: white; }
+    .star-rating { display: flex; gap: 5px; }
+    .star-rating i { font-size: 2rem; color: #dee2e6; cursor: pointer; transition: color 0.2s; }
+    .star-rating i:hover, .star-rating i.active { color: var(--warning-color); }
+    .divider { height: 3px; background: linear-gradient(90deg, var(--primary-color), var(--success-color)); border-radius: 2px; margin: 30px 0; }
+    .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d1e7dd; color: #0f5132; }
+    .form-check-input:checked { background-color: var(--success-color); border-color: var(--success-color); }
+    .form-check-label { font-weight: 500; }
+    .box-card { background: white; border: 2px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .box-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+    .box-number-badge { background: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .btn-manutencao { background: linear-gradient(135deg, var(--success-color), #157347); border: none; color: white; }
+    .btn-manutencao:hover { background: linear-gradient(135deg, #157347, #146c43); color: white; }
+    .btn-pelicula { background: linear-gradient(135deg, var(--purple-color), #5a32a3); border: none; color: white; }
+    .btn-pelicula:hover { background: linear-gradient(135deg, #5a32a3, #4a2893); color: white; }
+    .modal-header.manutencao { background: linear-gradient(135deg, var(--success-color), #157347); color: white; }
+    .modal-header.pelicula { background: linear-gradient(135deg, var(--purple-color), #5a32a3); color: white; }
+    .modal-header .btn-close { filter: brightness(0) invert(1); }
+    @media print { .no-print { display: none !important; } .section-card { break-inside: avoid; } }
   </style>
 </head>
 <body>
   <div class="main-container">
     <!-- Header -->
     <div class="text-center mb-4">
-      <h1 class="h3 fw-bold text-primary">
-        <i class="bi bi-clipboard-check me-2"></i>
-        Ordem de Serviço
-      </h1>
+      <h1 class="h3 fw-bold text-primary"><i class="bi bi-clipboard-check me-2"></i>Ordem de Serviço</h1>
       <p class="text-muted">Manutenção de Box e Colocação de Película</p>
     </div>
 
     <!-- 1. Dados do Cliente -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-person-fill me-2"></i>
-        1. Dados do Cliente
-      </div>
+      <div class="section-header"><i class="bi bi-person-fill me-2"></i>1. Dados do Cliente</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -272,11 +113,11 @@
           </div>
           <div class="col-md-8">
             <label class="form-label">Endereço</label>
-            <input type="text" class="form-control" placeholder="Rua, Avenida...">
+            <input type="text" class="form-control" placeholder="Rua, Avenida..." id="endereco">
           </div>
           <div class="col-md-4">
             <label class="form-label">Número</label>
-            <input type="text" class="form-control" placeholder="Nº">
+            <input type="text" class="form-control" placeholder="Nº" id="numero">
           </div>
           <div class="col-md-4">
             <label class="form-label">Complemento</label>
@@ -284,76 +125,45 @@
           </div>
           <div class="col-md-4">
             <label class="form-label">Bairro</label>
-            <input type="text" class="form-control" placeholder="Bairro">
+            <input type="text" class="form-control" placeholder="Bairro" id="bairro">
           </div>
           <div class="col-md-4">
             <label class="form-label">Cidade/Estado</label>
-            <input type="text" class="form-control" placeholder="Cidade - UF">
+            <input type="text" class="form-control" placeholder="Cidade - UF" id="cidadeEstado">
           </div>
           <div class="col-12 mt-3">
             <button type="button" class="btn btn-route" onclick="calcularRota()">
-              <i class="bi bi-geo-alt-fill me-2"></i>
-              Calcular Rota
+              <i class="bi bi-geo-alt-fill me-2"></i>Calcular Rota
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 2. Descrição do Serviço -->
+    <!-- 2. Quantidade de Box -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-list-check me-2"></i>
-        2. Descrição do Serviço
-      </div>
+      <div class="section-header"><i class="bi bi-grid-3x3-gap-fill me-2"></i>2. Quantidade de Box</div>
       <div class="section-body">
-        <div class="row g-3">
-          <div class="col-12">
-            <div class="form-check form-check-lg mb-3">
-              <input class="form-check-input" type="checkbox" id="manutencaoAnual" style="width: 1.5em; height: 1.5em;">
-              <label class="form-check-label ms-2 fs-5" for="manutencaoAnual">
-                <i class="bi bi-tools me-2 text-primary"></i>
-                Manutenção Anual
-              </label>
-            </div>
-            <div class="form-check form-check-lg">
-              <input class="form-check-input" type="checkbox" id="colocacaoPelicula" style="width: 1.5em; height: 1.5em;">
-              <label class="form-check-label ms-2 fs-5" for="colocacaoPelicula">
-                <i class="bi bi-shield-check me-2 text-success"></i>
-                Colocação de Película
-              </label>
-            </div>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Quantos boxes serão atendidos?</label>
+            <input type="number" class="form-control" id="qtdBox" value="1" min="1" max="10" onchange="renderBoxes()">
           </div>
-          <div class="col-12 mt-3">
-            <label class="form-label">Local onde fica o Box</label>
-            <textarea class="form-control" rows="2" placeholder="Descreva o local onde o box está instalado (ex: Banheiro suíte, Banheiro social...)"></textarea>
+          <div class="col-md-4">
+            <button type="button" class="btn btn-primary" onclick="renderBoxes()">
+              <i class="bi bi-arrow-repeat me-2"></i>Atualizar
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 3. Foto do Box -->
-    <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-camera-fill me-2"></i>
-        3. Foto do Box
-      </div>
-      <div class="section-body">
-        <div class="photo-upload" onclick="document.getElementById('fotoBox').click()">
-          <i class="bi bi-camera"></i>
-          <p class="mb-0 mt-2 text-muted">Clique para tirar ou selecionar foto do box</p>
-          <input type="file" id="fotoBox" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewBox')">
-        </div>
-        <img id="previewBox" class="photo-preview" alt="Preview">
-      </div>
-    </div>
+    <!-- 3. Boxes Dinâmicos -->
+    <div id="boxesContainer"></div>
 
     <!-- 4. Data da Solicitação -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-calendar-check me-2"></i>
-        4. Data da Solicitação
-      </div>
+      <div class="section-header"><i class="bi bi-calendar-check me-2"></i>3. Data da Solicitação</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -361,9 +171,7 @@
             <input type="datetime-local" class="form-control" id="dataSolicitacao">
           </div>
           <div class="col-md-6 d-flex align-items-end">
-            <span class="status-badge status-pending">
-              <i class="bi bi-clock me-1"></i> Preenchimento automático ao salvar
-            </span>
+            <span class="status-badge status-pending"><i class="bi bi-clock me-1"></i> Preenchimento automático ao salvar</span>
           </div>
         </div>
       </div>
@@ -371,10 +179,7 @@
 
     <!-- 5. Agendamento -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-calendar-event me-2"></i>
-        5. Agendamento
-      </div>
+      <div class="section-header"><i class="bi bi-calendar-event me-2"></i>4. Agendamento</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -391,10 +196,7 @@
 
     <!-- 6. Data do Contato do Prestador -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-telephone-fill me-2"></i>
-        6. Data do Contato do Prestador
-      </div>
+      <div class="section-header"><i class="bi bi-telephone-fill me-2"></i>5. Data do Contato do Prestador</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -415,312 +217,21 @@
 
     <div class="divider"></div>
 
-    <!-- MANUTENÇÃO ANUAL - CHECKLIST -->
-    <div class="section-card" id="sectionManutencao">
-      <div class="section-header success">
-        <i class="bi bi-tools me-2"></i>
-        Checklist - Manutenção Anual
-      </div>
-      <div class="section-body">
-        
-        <!-- Passo 1 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">1</span>
-            <span class="fw-bold">Foto Inicial do Box</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check1">
-              <label class="form-check-label" for="check1">Concluído</label>
-            </div>
-          </div>
-          <div class="photo-upload" onclick="document.getElementById('fotoInicial').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto inicial do box antes da manutenção</p>
-            <input type="file" id="fotoInicial" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewInicial')">
-          </div>
-          <img id="previewInicial" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 2 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">2</span>
-            <span class="fw-bold">Análise Geral do Box</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check2">
-              <label class="form-check-label" for="check2">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small mb-2">Analise o funcionamento e estado geral do box</p>
-          <label class="form-label">Análise:</label>
-          <textarea class="form-control" rows="4" placeholder="Descreva em que estado encontrou o box, funcionamento das roldanas, trilho, vedação, etc..."></textarea>
-        </div>
-
-        <!-- Passo 3 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">3</span>
-            <span class="fw-bold">Troca das Roldanas</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check3">
-              <label class="form-check-label" for="check3">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small mb-2">Realize a troca das roldanas e tire foto das roldanas novas</p>
-          <div class="photo-upload" onclick="document.getElementById('fotoRoldanas').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto das roldanas novas instaladas</p>
-            <input type="file" id="fotoRoldanas" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewRoldanas')">
-          </div>
-          <img id="previewRoldanas" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 4 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">4</span>
-            <span class="fw-bold">Análise do Trilho</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check4">
-              <label class="form-check-label" for="check4">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small mb-2">Analise o estado interno do trilho, fixações, batedores e realize a limpeza</p>
-          <div class="photo-upload" onclick="document.getElementById('fotoTrilho').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto do trilho limpo</p>
-            <input type="file" id="fotoTrilho" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewTrilho')">
-          </div>
-          <img id="previewTrilho" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 5 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">5</span>
-            <span class="fw-bold">Estado Geral do Vidro</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check5">
-              <label class="form-check-label" for="check5">Concluído</label>
-            </div>
-          </div>
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="temTrincas">
-                <label class="form-check-label text-danger" for="temTrincas">
-                  <i class="bi bi-exclamation-triangle me-1"></i>
-                  Existem sinais de trincas?
-                </label>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="substituirVidro">
-                <label class="form-check-label text-warning" for="substituirVidro">
-                  <i class="bi bi-arrow-repeat me-1"></i>
-                  É necessário substituição?
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="photo-upload" onclick="document.getElementById('fotoVidro').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto do estado do vidro</p>
-            <input type="file" id="fotoVidro" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewVidro')">
-          </div>
-          <img id="previewVidro" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 6 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number">6</span>
-            <span class="fw-bold">Remontagem Final</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="check6">
-              <label class="form-check-label" for="check6">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small mb-2">Realize a remontagem geral do box e tire foto final</p>
-          <div class="photo-upload" onclick="document.getElementById('fotoFinalManut').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto final do box após manutenção</p>
-            <input type="file" id="fotoFinalManut" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewFinalManut')">
-          </div>
-          <img id="previewFinalManut" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Assinatura Manutenção -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number"><i class="bi bi-pen"></i></span>
-            <span class="fw-bold">Assinatura do Prestador - Responsabilidade pela Manutenção</span>
-          </div>
-          <p class="text-muted small mb-2">Assine abaixo confirmando a responsabilidade pela manutenção realizada</p>
-          <canvas id="signatureManut" class="signature-pad"></canvas>
-          <div class="mt-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature('signatureManut')">
-              <i class="bi bi-eraser me-1"></i> Limpar Assinatura
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- COLOCAÇÃO DE PELÍCULA - CHECKLIST -->
-    <div class="section-card" id="sectionPelicula">
-      <div class="section-header" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
-        <i class="bi bi-shield-check me-2"></i>
-        Checklist - Colocação de Película de Proteção
-      </div>
-      <div class="section-body">
-        
-        <!-- Passo 1 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">1</span>
-            <span class="fw-bold">Foto Geral do Box</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP1">
-              <label class="form-check-label" for="checkP1">Concluído</label>
-            </div>
-          </div>
-          <div class="photo-upload" onclick="document.getElementById('fotoGeralPelicula').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Tire uma foto geral do box</p>
-            <input type="file" id="fotoGeralPelicula" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewGeralPelicula')">
-          </div>
-          <img id="previewGeralPelicula" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 2 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">2</span>
-            <span class="fw-bold">Verificar Condições Gerais do Vidro</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP2">
-              <label class="form-check-label" for="checkP2">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small">Verifique se o vidro está em condições adequadas para receber a película</p>
-        </div>
-
-        <!-- Passo 3 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">3</span>
-            <span class="fw-bold">Limpeza do Vidro</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP3">
-              <label class="form-check-label" for="checkP3">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small">Realize a limpeza completa do vidro</p>
-        </div>
-
-        <!-- Passo 4 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">4</span>
-            <span class="fw-bold">Retirar Porta, Roldanas e Puxador</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP4">
-              <label class="form-check-label" for="checkP4">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small">Retire a porta do box, as roldanas e o puxador</p>
-        </div>
-
-        <!-- Passo 5 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">5</span>
-            <span class="fw-bold">Aplicar Película na Porta</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP5">
-              <label class="form-check-label" for="checkP5">Concluído</label>
-            </div>
-          </div>
-          <p class="text-muted small">Aplique a película na porta e recoloque roldanas e puxador</p>
-          <div class="photo-upload" onclick="document.getElementById('fotoPortaPelicula').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto da porta com película</p>
-            <input type="file" id="fotoPortaPelicula" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewPortaPelicula')">
-          </div>
-          <img id="previewPortaPelicula" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 6 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">6</span>
-            <span class="fw-bold">Aplicar Película no Vidro Fixo</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP6">
-              <label class="form-check-label" for="checkP6">Concluído</label>
-            </div>
-          </div>
-          <div class="photo-upload" onclick="document.getElementById('fotoVidroFixo').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto do vidro fixo com película</p>
-            <input type="file" id="fotoVidroFixo" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewVidroFixo')">
-          </div>
-          <img id="previewVidroFixo" class="photo-preview" alt="Preview">
-        </div>
-
-        <!-- Passo 7 -->
-        <div class="checklist-item">
-          <div class="checklist-header">
-            <span class="checklist-number" style="background: #6f42c1;">7</span>
-            <span class="fw-bold">Remontagem e Foto Final</span>
-            <div class="form-check ms-auto">
-              <input class="form-check-input" type="checkbox" id="checkP7">
-              <label class="form-check-label" for="checkP7">Concluído</label>
-            </div>
-          </div>
-          <div class="photo-upload" onclick="document.getElementById('fotoFinalPelicula').click()">
-            <i class="bi bi-camera"></i>
-            <p class="mb-0 mt-2 text-muted">Foto final do box com película</p>
-            <input type="file" id="fotoFinalPelicula" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewFinalPelicula')">
-          </div>
-          <img id="previewFinalPelicula" class="photo-preview" alt="Preview">
-        </div>
-
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
     <!-- Gerar Certificado -->
     <div class="section-card">
-      <div class="section-header success">
-        <i class="bi bi-file-earmark-pdf me-2"></i>
-        Gerar Certificado
-      </div>
+      <div class="section-header success"><i class="bi bi-file-earmark-pdf me-2"></i>Gerar Certificado</div>
       <div class="section-body text-center">
         <p class="mb-3">Gere o PDF do Certificado de Manutenção Anual de Box (e Colocação de Película, se realizado) com todas as informações, fotos e garantia de 1 ano.</p>
         <button type="button" class="btn btn-generate" onclick="gerarCertificado()">
-          <i class="bi bi-file-earmark-pdf me-2"></i>
-          Gerar PDF e Enviar por E-mail
+          <i class="bi bi-file-earmark-pdf me-2"></i>Gerar PDF e Enviar por E-mail
         </button>
-        <p class="text-muted small mt-3">
-          <i class="bi bi-info-circle me-1"></i>
-          O certificado será enviado para o e-mail do cliente e do administrador
-        </p>
+        <p class="text-muted small mt-3"><i class="bi bi-info-circle me-1"></i>O certificado será enviado para o e-mail do cliente e do administrador</p>
       </div>
     </div>
 
     <!-- Data de Conclusão -->
     <div class="section-card">
-      <div class="section-header">
-        <i class="bi bi-calendar-check-fill me-2"></i>
-        Data de Conclusão
-      </div>
+      <div class="section-header"><i class="bi bi-calendar-check-fill me-2"></i>Data de Conclusão</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
@@ -736,23 +247,20 @@
 
     <!-- Dados Financeiros -->
     <div class="section-card">
-      <div class="section-header warning">
-        <i class="bi bi-currency-dollar me-2"></i>
-        Dados Financeiros
-      </div>
+      <div class="section-header warning"><i class="bi bi-currency-dollar me-2"></i>Dados Financeiros</div>
       <div class="section-body">
         <div class="row g-3">
           <div class="col-md-6">
             <label class="form-label">Valor Manutenção Anual (R$)</label>
-            <input type="number" class="form-control" placeholder="0,00" step="0.01">
+            <input type="number" class="form-control" placeholder="0,00" step="0.01" id="valorManut" oninput="updateValorTotal()">
           </div>
           <div class="col-md-6">
             <label class="form-label">Valor Colocação de Película (R$)</label>
-            <input type="number" class="form-control" placeholder="0,00" step="0.01">
+            <input type="number" class="form-control" placeholder="0,00" step="0.01" id="valorPelicula" oninput="updateValorTotal()">
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">Valor Total (R$)</label>
-            <input type="number" class="form-control bg-light" placeholder="0,00" step="0.01" readonly>
+            <input type="number" class="form-control bg-light" placeholder="0,00" step="0.01" id="valorTotal" readonly>
           </div>
         </div>
         <hr>
@@ -763,7 +271,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label">Forma de Pagamento</label>
-            <select class="form-select">
+            <select class="form-select" id="formaPagamento">
               <option value="">Selecione...</option>
               <option value="pix">PIX</option>
               <option value="dinheiro">Dinheiro</option>
@@ -780,8 +288,7 @@
     <!-- Avaliação do Cliente -->
     <div class="section-card">
       <div class="section-header" style="background: linear-gradient(135deg, #fd7e14, #e55300);">
-        <i class="bi bi-star-fill me-2"></i>
-        Avaliação do Cliente
+        <i class="bi bi-star-fill me-2"></i>Avaliação do Cliente
       </div>
       <div class="section-body text-center">
         <p class="mb-3">Como o cliente avalia o serviço prestado?</p>
@@ -800,34 +307,379 @@
     <!-- Botões de Ação -->
     <div class="d-flex gap-3 justify-content-center my-4 no-print">
       <button type="button" class="btn btn-lg btn-outline-secondary" onclick="window.print()">
-        <i class="bi bi-printer me-2"></i>
-        Imprimir
+        <i class="bi bi-printer me-2"></i>Imprimir
       </button>
-      <button type="button" class="btn btn-lg btn-primary">
-        <i class="bi bi-save me-2"></i>
-        Salvar Ordem
+      <button type="button" class="btn btn-lg btn-primary" onclick="salvarOrdem()">
+        <i class="bi bi-save me-2"></i>Salvar Ordem
       </button>
     </div>
+  </div>
 
+  <!-- Modal Manutenção Anual -->
+  <div class="modal fade" id="modalManutencao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header manutencao">
+          <h5 class="modal-title"><i class="bi bi-tools me-2"></i>Manutenção Anual - Box <span id="modalManutBoxNum"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modalManutBody">
+          <!-- Conteúdo gerado dinamicamente -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-success" onclick="finalizarManutencao()">
+            <i class="bi bi-check-circle me-2"></i>Finalizar Manutenção
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Colocação de Película -->
+  <div class="modal fade" id="modalPelicula" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header pelicula">
+          <h5 class="modal-title"><i class="bi bi-shield-check me-2"></i>Colocação de Película - Box <span id="modalPeliculaBoxNum"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="modalPeliculaBody">
+          <!-- Conteúdo gerado dinamicamente -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-manutencao btn-pelicula" onclick="finalizarPelicula()">
+            <i class="bi bi-check-circle me-2"></i>Finalizar Película
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function toLocalISOString(date) {
-      const offset = date.getTimezoneOffset() * 60000;
-      return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+    let currentBoxIndex = 0;
+
+    // Gerar HTML de um box
+    function createBoxHTML(index) {
+      const num = index + 1;
+      return `
+        <div class="box-card" id="box-${index}">
+          <div class="box-card-header">
+            <span class="box-number-badge">${num}</span>
+            <h5 class="mb-0 fw-bold">Box ${num}</h5>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nome do Ambiente</label>
+              <input type="text" class="form-control" placeholder="Ex: Banheiro Suíte, Banheiro Social..." id="ambiente-${index}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Foto do Box</label>
+              <div class="photo-upload" onclick="document.getElementById('fotoBox-${index}').click()">
+                <i class="bi bi-camera"></i>
+                <p class="mb-0 small text-muted">Clique para foto</p>
+                <input type="file" id="fotoBox-${index}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'previewBox-${index}')">
+              </div>
+              <img id="previewBox-${index}" class="photo-preview" alt="Preview">
+            </div>
+            <div class="col-12">
+              <div class="d-flex gap-3 flex-wrap">
+                <button type="button" class="btn btn-manutencao" onclick="abrirModalManutencao(${index})">
+                  <i class="bi bi-tools me-2"></i>Manutenção Anual
+                </button>
+                <button type="button" class="btn btn-pelicula" onclick="abrirModalPelicula(${index})">
+                  <i class="bi bi-shield-check me-2"></i>Troca de Película
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
-    function nowLocalISOString() {
-      return toLocalISOString(new Date());
+    // Renderizar boxes baseado na quantidade
+    function renderBoxes() {
+      const qtd = parseInt(document.getElementById('qtdBox').value) || 1;
+      const container = document.getElementById('boxesContainer');
+      container.innerHTML = '';
+      for (let i = 0; i < qtd; i++) {
+        container.innerHTML += createBoxHTML(i);
+      }
+    }
+
+    // Abrir modal de Manutenção Anual
+    function abrirModalManutencao(boxIndex) {
+      currentBoxIndex = boxIndex;
+      document.getElementById('modalManutBoxNum').textContent = boxIndex + 1;
+      document.getElementById('modalManutBody').innerHTML = getManutencaoContent(boxIndex);
+      new bootstrap.Modal(document.getElementById('modalManutencao')).show();
+    }
+
+    // Abrir modal de Película
+    function abrirModalPelicula(boxIndex) {
+      currentBoxIndex = boxIndex;
+      document.getElementById('modalPeliculaBoxNum').textContent = boxIndex + 1;
+      document.getElementById('modalPeliculaBody').innerHTML = getPeliculaContent(boxIndex);
+      new bootstrap.Modal(document.getElementById('modalPelicula')).show();
+    }
+
+    // Conteúdo do checklist de Manutenção Anual
+    function getManutencaoContent(boxIndex) {
+      return `
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">1</span>
+            <span class="fw-bold">Foto Inicial do Box</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check1-${boxIndex}">
+              <label class="form-check-label" for="manut-check1-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('manut-foto1-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto inicial antes da manutenção</p>
+            <input type="file" id="manut-foto1-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'manut-preview1-${boxIndex}')">
+          </div>
+          <img id="manut-preview1-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">2</span>
+            <span class="fw-bold">Análise Geral do Box</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check2-${boxIndex}">
+              <label class="form-check-label" for="manut-check2-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small mb-2">Analise o funcionamento e estado geral do box</p>
+          <label class="form-label">Análise:</label>
+          <textarea class="form-control" rows="4" id="manut-analise-${boxIndex}" placeholder="Descreva em que estado encontrou o box, funcionamento das roldanas, trilho, vedação, etc..."></textarea>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">3</span>
+            <span class="fw-bold">Troca das Roldanas</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check3-${boxIndex}">
+              <label class="form-check-label" for="manut-check3-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small mb-2">Realize a troca das roldanas e tire foto das roldanas novas</p>
+          <div class="photo-upload" onclick="document.getElementById('manut-foto3-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto das roldanas novas</p>
+            <input type="file" id="manut-foto3-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'manut-preview3-${boxIndex}')">
+          </div>
+          <img id="manut-preview3-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">4</span>
+            <span class="fw-bold">Análise do Trilho</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check4-${boxIndex}">
+              <label class="form-check-label" for="manut-check4-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small mb-2">Analise o estado interno do trilho, fixações, batedores e realize a limpeza</p>
+          <div class="photo-upload" onclick="document.getElementById('manut-foto4-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto do trilho limpo</p>
+            <input type="file" id="manut-foto4-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'manut-preview4-${boxIndex}')">
+          </div>
+          <img id="manut-preview4-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">5</span>
+            <span class="fw-bold">Estado Geral do Vidro</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check5-${boxIndex}">
+              <label class="form-check-label" for="manut-check5-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="manut-trincas-${boxIndex}">
+                <label class="form-check-label text-danger" for="manut-trincas-${boxIndex}">
+                  <i class="bi bi-exclamation-triangle me-1"></i>Existem trincas?
+                </label>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="manut-substituir-${boxIndex}">
+                <label class="form-check-label text-warning" for="manut-substituir-${boxIndex}">
+                  <i class="bi bi-arrow-repeat me-1"></i>Necessário substituição?
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('manut-foto5-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto do estado do vidro</p>
+            <input type="file" id="manut-foto5-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'manut-preview5-${boxIndex}')">
+          </div>
+          <img id="manut-preview5-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);">6</span>
+            <span class="fw-bold">Remontagem Final</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="manut-check6-${boxIndex}">
+              <label class="form-check-label" for="manut-check6-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small mb-2">Realize a remontagem geral do box e tire foto final</p>
+          <div class="photo-upload" onclick="document.getElementById('manut-foto6-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto final após manutenção</p>
+            <input type="file" id="manut-foto6-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'manut-preview6-${boxIndex}')">
+          </div>
+          <img id="manut-preview6-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--success-color);"><i class="bi bi-pen"></i></span>
+            <span class="fw-bold">Assinatura do Prestador</span>
+          </div>
+          <p class="text-muted small mb-2">Assine confirmando a responsabilidade pela manutenção realizada</p>
+          <canvas id="signatureManut-${boxIndex}" class="signature-pad" width="400" height="150"></canvas>
+          <div class="mt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature('signatureManut-${boxIndex}')">
+              <i class="bi bi-eraser me-1"></i> Limpar
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Conteúdo do checklist de Película
+    function getPeliculaContent(boxIndex) {
+      return `
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">1</span>
+            <span class="fw-bold">Foto Geral do Box</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check1-${boxIndex}">
+              <label class="form-check-label" for="pel-check1-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('pel-foto1-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Tire uma foto geral do box</p>
+            <input type="file" id="pel-foto1-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'pel-preview1-${boxIndex}')">
+          </div>
+          <img id="pel-preview1-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">2</span>
+            <span class="fw-bold">Verificar Condições Gerais do Vidro</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check2-${boxIndex}">
+              <label class="form-check-label" for="pel-check2-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small">Verifique se o vidro está em condições adequadas para receber a película</p>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">3</span>
+            <span class="fw-bold">Limpeza do Vidro</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check3-${boxIndex}">
+              <label class="form-check-label" for="pel-check3-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small">Realize a limpeza completa do vidro</p>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">4</span>
+            <span class="fw-bold">Retirar Porta, Roldanas e Puxador</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check4-${boxIndex}">
+              <label class="form-check-label" for="pel-check4-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small">Retire a porta do box, as roldanas e o puxador</p>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">5</span>
+            <span class="fw-bold">Aplicar Película na Porta</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check5-${boxIndex}">
+              <label class="form-check-label" for="pel-check5-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <p class="text-muted small mb-2">Aplique a película na porta e recoloque roldanas e puxador</p>
+          <div class="photo-upload" onclick="document.getElementById('pel-foto5-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto da porta com película</p>
+            <input type="file" id="pel-foto5-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'pel-preview5-${boxIndex}')">
+          </div>
+          <img id="pel-preview5-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">6</span>
+            <span class="fw-bold">Aplicar Película no Vidro Fixo</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check6-${boxIndex}">
+              <label class="form-check-label" for="pel-check6-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('pel-foto6-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto do vidro fixo com película</p>
+            <input type="file" id="pel-foto6-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'pel-preview6-${boxIndex}')">
+          </div>
+          <img id="pel-preview6-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-header">
+            <span class="checklist-number" style="background: var(--purple-color);">7</span>
+            <span class="fw-bold">Remontagem e Foto Final</span>
+            <div class="form-check ms-auto">
+              <input class="form-check-input" type="checkbox" id="pel-check7-${boxIndex}">
+              <label class="form-check-label" for="pel-check7-${boxIndex}">Concluído</label>
+            </div>
+          </div>
+          <div class="photo-upload" onclick="document.getElementById('pel-foto7-${boxIndex}').click()">
+            <i class="bi bi-camera"></i>
+            <p class="mb-0 mt-2 text-muted">Foto final do box com película</p>
+            <input type="file" id="pel-foto7-${boxIndex}" accept="image/*" capture="environment" hidden onchange="previewImage(this, 'pel-preview7-${boxIndex}')">
+          </div>
+          <img id="pel-preview7-${boxIndex}" class="photo-preview" alt="Preview">
+        </div>
+      `;
     }
 
     // Preview de imagens
     function previewImage(input, previewId) {
       const preview = document.getElementById(previewId);
-      if (input.files && input.files[0]) {
+      if (input.files && input.files[0] && preview) {
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = function(e) {
           preview.src = e.target.result;
           preview.style.display = 'block';
         };
@@ -835,44 +687,34 @@
       }
     }
 
-    // Calcular Rota (origem = local atual; destino = endereço do cliente)
+    // Calcular Rota
     function calcularRota() {
-      const endereco = document.querySelector('input[placeholder="Rua, Avenida..."]').value.trim();
-      const numero = document.querySelector('input[placeholder="Nº"]').value.trim();
-      const bairro = document.querySelector('input[placeholder="Bairro"]').value.trim();
-      const cidadeEstado = document.querySelector('input[placeholder="Cidade - UF"]').value.trim();
-
+      const endereco = document.getElementById('endereco')?.value.trim() || '';
+      const numero = document.getElementById('numero')?.value.trim() || '';
+      const bairro = document.getElementById('bairro')?.value.trim() || '';
+      const cidadeEstado = document.getElementById('cidadeEstado')?.value.trim() || '';
       const parts = [endereco, numero && `Nº ${numero}`, bairro, cidadeEstado].filter(Boolean);
       const destino = parts.join(', ');
-
       if (!destino || destino.length < 5) {
-        alert('Preencha o endereço do cliente (Endereço, Número, Bairro e Cidade/Estado) para calcular a rota.');
+        alert('Preencha o endereço do cliente para calcular a rota.');
         return;
       }
-
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`;
-      window.open(url, '_blank');
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destino)}`, '_blank');
     }
 
-    // Buscar CEP (ViaCEP)
-    document.getElementById('cep').addEventListener('blur', async function () {
+    // Buscar CEP
+    document.getElementById('cep').addEventListener('blur', async function() {
       const cep = this.value.replace(/\D/g, '');
       if (cep.length === 8) {
         try {
           const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
           const data = await response.json();
           if (!data.erro) {
-            const elEndereco = document.querySelector('input[placeholder="Rua, Avenida..."]');
-            const elBairro = document.querySelector('input[placeholder="Bairro"]');
-            const elCidadeEstado = document.querySelector('input[placeholder="Cidade - UF"]');
-
-            if (elEndereco) elEndereco.value = data.logradouro || '';
-            if (elBairro) elBairro.value = data.bairro || '';
-            if (elCidadeEstado) elCidadeEstado.value = `${data.localidade || ''} - ${data.uf || ''}`.trim();
+            document.getElementById('endereco').value = data.logradouro || '';
+            document.getElementById('bairro').value = data.bairro || '';
+            document.getElementById('cidadeEstado').value = `${data.localidade || ''} - ${data.uf || ''}`.trim();
           }
-        } catch (e) {
-          console.error('Erro ao buscar CEP:', e);
-        }
+        } catch (e) { console.error('Erro ao buscar CEP:', e); }
       }
     });
 
@@ -881,172 +723,82 @@
       document.getElementById('avaliacao').value = rating;
       const stars = document.querySelectorAll('#starRating i');
       const texts = ['', 'Péssimo', 'Ruim', 'Regular', 'Bom', 'Excelente'];
-
       stars.forEach((star, index) => {
-        if (index < rating) {
-          star.classList.add('active');
-        } else {
-          star.classList.remove('active');
-        }
+        star.classList.toggle('active', index < rating);
       });
-
       document.getElementById('ratingText').textContent = texts[rating];
     }
 
     // Limpar Assinatura
     function clearSignature(canvasId) {
       const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // Inicializar Canvas de Assinatura
-    function initSignature(canvasId) {
-      const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext('2d');
-      let isDrawing = false;
-
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-
-      canvas.addEventListener('mousedown', startDrawing);
-      canvas.addEventListener('mousemove', draw);
-      canvas.addEventListener('mouseup', stopDrawing);
-      canvas.addEventListener('mouseout', stopDrawing);
-
-      canvas.addEventListener('touchstart', handleTouch);
-      canvas.addEventListener('touchmove', handleTouchMove);
-      canvas.addEventListener('touchend', stopDrawing);
-
-      function startDrawing(e) {
-        isDrawing = true;
-        ctx.beginPath();
-        ctx.moveTo(e.offsetX, e.offsetY);
-      }
-
-      function draw(e) {
-        if (!isDrawing) return;
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke();
-      }
-
-      function stopDrawing() {
-        isDrawing = false;
-      }
-
-      function handleTouch(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        isDrawing = true;
-        ctx.beginPath();
-        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      }
-
-      function handleTouchMove(e) {
-        e.preventDefault();
-        if (!isDrawing) return;
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-        ctx.stroke();
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
 
-    // Gerar Certificado (placeholder)
-    function gerarCertificado() {
-      const dataConclusao = nowLocalISOString();
-      document.getElementById('dataConclusao').value = dataConclusao;
-      localStorage.setItem('os_data_conclusao', dataConclusao);
-
-      alert('Certificado gerado com sucesso!\n\n(Template) Aqui você pode integrar a geração de PDF no seu sistema.');
-    }
-
+    // Valor Total
     function updateValorTotal() {
-      const warningHeader = document.querySelector('.section-header.warning');
-      const financeCard = warningHeader ? warningHeader.closest('.section-card') : null;
-      if (!financeCard) return;
-
-      const inputs = financeCard.querySelectorAll('input[type="number"]');
-      const manut = Number((inputs[0]?.value || '').replace(',', '.')) || 0;
-      const pelicula = Number((inputs[1]?.value || '').replace(',', '.')) || 0;
-      const total = manut + pelicula;
-
-      if (inputs[2]) inputs[2].value = total ? total.toFixed(2) : '';
+      const manut = parseFloat(document.getElementById('valorManut').value) || 0;
+      const pelicula = parseFloat(document.getElementById('valorPelicula').value) || 0;
+      document.getElementById('valorTotal').value = (manut + pelicula).toFixed(2);
     }
 
-    function updateChecklistsVisibility() {
-      const manut = document.getElementById('manutencaoAnual');
-      const pelicula = document.getElementById('colocacaoPelicula');
-      const sectionManut = document.getElementById('sectionManutencao');
-      const sectionPel = document.getElementById('sectionPelicula');
-
-      if (sectionManut) sectionManut.style.display = manut && manut.checked ? '' : 'none';
-      if (sectionPel) sectionPel.style.display = pelicula && pelicula.checked ? '' : 'none';
+    // Gerar Certificado
+    function gerarCertificado() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      document.getElementById('dataConclusao').value = new Date(now - offset).toISOString().slice(0, 16);
+      alert('Certificado gerado com sucesso!\n\n(Template) Integre a geração de PDF no seu sistema.');
     }
 
-    function bindSaveButton() {
-      const btnSalvar = document.querySelector('.no-print button.btn-primary');
-      if (!btnSalvar) return;
-
-      btnSalvar.addEventListener('click', function () {
-        const inputSolic = document.getElementById('dataSolicitacao');
-        if (inputSolic && !inputSolic.value) {
-          const dt = nowLocalISOString();
-          inputSolic.value = dt;
-          localStorage.setItem('os_data_solicitacao', dt);
-        }
-
-        // (Template) "salvar" local apenas para manter datas
-        alert('Ordem salva (template local).');
-      });
-    }
-
-    // Marcar checklist como concluído
-    function bindChecklistCompletedStyles() {
-      document.querySelectorAll('.checklist-item .form-check-input').forEach((checkbox) => {
-        checkbox.addEventListener('change', function () {
-          const item = this.closest('.checklist-item');
-          if (!item) return;
-          if (this.checked) item.classList.add('completed');
-          else item.classList.remove('completed');
-        });
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-      // Solicitação: só preenche quando salvar pela primeira vez
-      const savedSolic = localStorage.getItem('os_data_solicitacao');
-      if (savedSolic) document.getElementById('dataSolicitacao').value = savedSolic;
-
-      // Conclusão: restaura se já tiver sido gerado
-      const savedConc = localStorage.getItem('os_data_conclusao');
-      if (savedConc) document.getElementById('dataConclusao').value = savedConc;
-
-      // Financeiro: soma automática
-      const warningHeader = document.querySelector('.section-header.warning');
-      const financeCard = warningHeader ? warningHeader.closest('.section-card') : null;
-      if (financeCard) {
-        const inputs = financeCard.querySelectorAll('input[type="number"]');
-        inputs[0]?.addEventListener('input', updateValorTotal);
-        inputs[1]?.addEventListener('input', updateValorTotal);
-        updateValorTotal();
+    // Salvar Ordem
+    function salvarOrdem() {
+      const inputSolic = document.getElementById('dataSolicitacao');
+      if (!inputSolic.value) {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        inputSolic.value = new Date(now - offset).toISOString().slice(0, 16);
       }
+      alert('Ordem salva (template local).');
+    }
 
-      // Mostrar/ocultar checklists conforme seleção
-      document.getElementById('manutencaoAnual')?.addEventListener('change', updateChecklistsVisibility);
-      document.getElementById('colocacaoPelicula')?.addEventListener('change', updateChecklistsVisibility);
-      updateChecklistsVisibility();
+    // Finalizar Manutenção
+    function finalizarManutencao() {
+      const boxCard = document.getElementById(`box-${currentBoxIndex}`);
+      if (boxCard) {
+        let badge = boxCard.querySelector('.badge-manut');
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'badge bg-success ms-2 badge-manut';
+          badge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Manutenção OK';
+          boxCard.querySelector('.box-card-header').appendChild(badge);
+        }
+      }
+      bootstrap.Modal.getInstance(document.getElementById('modalManutencao')).hide();
+    }
 
-      bindSaveButton();
-      bindChecklistCompletedStyles();
+    // Finalizar Película
+    function finalizarPelicula() {
+      const boxCard = document.getElementById(`box-${currentBoxIndex}`);
+      if (boxCard) {
+        let badge = boxCard.querySelector('.badge-pelicula');
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'badge ms-2 badge-pelicula';
+          badge.style.background = 'var(--purple-color)';
+          badge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Película OK';
+          boxCard.querySelector('.box-card-header').appendChild(badge);
+        }
+      }
+      bootstrap.Modal.getInstance(document.getElementById('modalPelicula')).hide();
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+      renderBoxes();
     });
-
-    // Inicializar assinaturas quando a página carregar
-    window.addEventListener('load', function () {
-      initSignature('signatureManut');
-    });
-  </script>
   </script>
 </body>
 </html>
