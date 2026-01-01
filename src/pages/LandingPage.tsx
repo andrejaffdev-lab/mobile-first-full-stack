@@ -127,7 +127,7 @@ const LandingPage = () => {
           <div className="flex flex-col gap-3">
             <Button 
               size="lg"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/register", { state: { profileType: "cliente" } })}
               className="w-full bg-white text-primary hover:bg-white/90 shadow-xl shadow-black/20 text-base font-semibold h-14 rounded-xl"
             >
               Solicitar Manutenção
