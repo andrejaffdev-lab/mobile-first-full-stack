@@ -11,6 +11,9 @@ import ClienteDashboard from "./pages/cliente/Dashboard";
 import NovaOrdem from "./pages/cliente/NovaOrdem";
 import SelecionarServicos from "./pages/cliente/SelecionarServicos";
 import Pagamento from "./pages/cliente/Pagamento";
+import Servicos from "./pages/cliente/Servicos";
+import DetalheServico from "./pages/cliente/DetalheServico";
+import Garantia from "./pages/cliente/Garantia";
 import PrestadorDashboard from "./pages/prestador/Dashboard";
 import Tarefas from "./pages/prestador/Tarefas";
 import VidracariaDashboard from "./pages/vidracaria/Dashboard";
@@ -38,7 +41,9 @@ const App = () => (
           <Route path="/nova-ordem" element={<NovaOrdem />} />
           <Route path="/selecionar-servicos" element={<SelecionarServicos />} />
           <Route path="/pagamento" element={<Pagamento />} />
-          <Route path="/orders" element={<ClienteDashboard />} />
+          <Route path="/orders" element={<Servicos />} />
+          <Route path="/servico/:id" element={<DetalheServico />} />
+          <Route path="/garantia" element={<Garantia />} />
           <Route path="/chat" element={<ClienteDashboard />} />
           <Route path="/profile" element={<ClienteDashboard />} />
           
