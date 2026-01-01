@@ -460,7 +460,7 @@ const OrdemServico: React.FC = () => {
       {/* Header */}
       <div className="bg-primary text-primary-foreground p-4 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary-foreground hover:bg-primary-foreground/20">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/ordens")} className="text-primary-foreground hover:bg-primary-foreground/20">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
