@@ -27,6 +27,69 @@
 
   <body>
     <div id="root"></div>
+
+const HeroSection = () => {
+  return (
+    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 gradient-hero opacity-[0.03]" />
+      
+      {/* Decorative Elements */}
+      <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+
+      <div className="container mx-auto px-4 py-12 md:py-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Content */}
+          <div className="space-y-8 animate-slide-up">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Shield className="w-4 h-4" />
+              <span>Manutenção Preventiva de Box</span>
+            </div>
+
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground">
+              Seu box de vidro
+              <span className="block w-full h-[3px] bg-primary rounded-full my-2"></span>
+              o ano todo
+            </h1>
+
+            <p className="text-lg text-muted-foreground max-w-xl">
+              Garanta a manutenção preventiva anual do seu box de banheiro conforme a norma ABNT NBR 14207. 
+              Profissionais qualificados, garantia real e tranquilidade para sua família.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button variant="hero" size="xl" asChild>
+                <Link to="/solicitar">
+                  Solicitar Manutenção
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="xl" asChild>
+                <Link to="/auth?type=prestador">
+                  Seja um Prestador
+                </Link>
+              </Button>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap gap-6 pt-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="w-5 h-5 text-success" />
+                <span>Norma ABNT</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="w-5 h-5 text-primary" />
+                <span>Atendimento em 24h</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Award className="w-5 h-5 text-warning" />
+                <span>Certificado Digital</span>
+              </div>
+            </div>
+          </div>
+
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
