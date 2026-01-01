@@ -1,9 +1,13 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Wrench, Building2, Map, DollarSign, ClipboardList, Clock, ChevronRight } from "lucide-react";
+import { Users, Wrench, Building2, Map, DollarSign, ClipboardList, Clock, ChevronRight, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 const AdminDashboard = () => {
+  const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
   const navigate = useNavigate();
 
   const stats = [
@@ -49,6 +53,46 @@ const AdminDashboard = () => {
     { name: "Pedro Almeida", type: "Prestador", qualifications: 3, location: "Rio de Janeiro, RJ" },
     { name: "Glass Premium", type: "Vidraçaria", qualifications: 0, location: "Belo Horizonte, MG" },
   ];
+
+  // Carregar contador de mensagens não lidas
+  useEffect(() => {
+    const carregarMensagensNaoLidas = async () => {
+      const { count, error } = await supabase
+        .from('mensagens')
+        .select('*', { count: 'exact', head: true })
+        .eq('lida', false)
+        .neq('remetente_tipo', 'admin');
+
+      if (!error && count !== null) {
+        setMensagensNaoLidas(count);
+      }
+    };
+
+    carregarMensagensNaoLidas();
+
+    // Realtime para novas mensagens
+    const channel = supabase
+      .channel('mensagens-admin-count')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'mensagens'
+        },
+        (payload) => {
+          const novaMensagem = payload.new as { remetente_tipo: string };
+          if (novaMensagem.remetente_tipo !== 'admin') {
+            setMensagensNaoLidas(prev => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">
@@ -119,6 +163,26 @@ const AdminDashboard = () => {
             <div>
               <p className="font-semibold text-foreground">Mapa</p>
               <p className="text-xs text-muted-foreground">Ver cobertura</p>
+            </div>
+          </button>
+          <button 
+            onClick={() => navigate('/admin/chat')}
+            className="premium-card flex items-center gap-3 text-left relative col-span-2"
+          >
+            <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center relative">
+              <MessageCircle className="w-6 h-6 text-accent" />
+              {mensagensNaoLidas > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full"
+                >
+                  {mensagensNaoLidas > 99 ? '99+' : mensagensNaoLidas}
+                </Badge>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-foreground">Chat</p>
+              <p className="text-xs text-muted-foreground">Central de mensagens</p>
             </div>
           </button>
         </motion.div>
