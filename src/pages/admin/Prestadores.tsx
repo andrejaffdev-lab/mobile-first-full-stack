@@ -401,7 +401,7 @@ const Prestadores = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex-1 overflow-y-auto">
               <div className="p-6 space-y-6">
                 {/* Dados Pessoais */}
                 <div>
@@ -648,7 +648,7 @@ const Prestadores = () => {
                   />
                 </div>
               </div>
-            </ScrollArea>
+            </div>
             <div className="flex gap-2 p-6 border-t border-border">
               <Button variant="outline" className="flex-1" onClick={() => setEditingPrestador(null)}>
                 Cancelar
