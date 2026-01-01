@@ -31,6 +31,7 @@ import CadastrarCliente from "./pages/vidracaria/CadastrarCliente";
 import Clientes from "./pages/vidracaria/Clientes";
 import Comissoes from "./pages/vidracaria/Comissoes";
 import ProfileVidracaria from "./pages/vidracaria/Profile";
+import OrdemServico from "./pages/vidracaria/OrdemServico";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminFinanceiro from "./pages/admin/Financeiro";
 import AdminMapa from "./pages/admin/Mapa";
@@ -87,6 +88,7 @@ const App = () => (
           <Route path="/vidracaria/clientes" element={<Clientes />} />
           <Route path="/vidracaria/comissoes" element={<Comissoes />} />
           <Route path="/vidracaria/profile" element={<ProfileVidracaria />} />
+          <Route path="/vidracaria/ordem-servico" element={<OrdemServico />} />
           
           {/* Admin */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
