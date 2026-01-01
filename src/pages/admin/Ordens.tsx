@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -130,6 +130,18 @@ const Ordens = () => {
   ]);
 
   const [editingOrdem, setEditingOrdem] = useState<typeof ordens[0] | null>(null);
+
+  // Trava o scroll do body quando o modal está aberto
+  useEffect(() => {
+    if (editingOrdem) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [editingOrdem]);
 
   const handleDelete = (id: string, titulo: string) => {
     setOrdens(prev => prev.filter(o => o.id !== id));
@@ -354,16 +366,16 @@ const Ordens = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col"
+            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between p-6 border-b border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
               <h2 className="text-lg font-semibold">Editar Ordem de Serviço</h2>
               <button onClick={() => setEditingOrdem(null)} className="p-1 hover:bg-muted rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <ScrollArea className="flex-1 p-6">
-              <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 space-y-6">
                 {/* Dados do Serviço */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
@@ -620,7 +632,7 @@ const Ordens = () => {
                   />
                 </div>
               </div>
-            </ScrollArea>
+            </div>
             <div className="flex gap-2 p-6 border-t border-border">
               <Button variant="outline" className="flex-1" onClick={() => setEditingOrdem(null)}>
                 Cancelar
