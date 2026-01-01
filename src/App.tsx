@@ -38,6 +38,7 @@ import AdminPrestadores from "./pages/admin/Prestadores";
 import AdminVidracarias from "./pages/admin/Vidracarias";
 import AdminOrdens from "./pages/admin/Ordens";
 import AdminClientes from "./pages/admin/Clientes";
+import AdminOrdemDetalhe from "./pages/admin/OrdemDetalhe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +95,7 @@ const App = () => (
           <Route path="/admin/prestadores" element={<AdminPrestadores />} />
           <Route path="/admin/vidracarias" element={<AdminVidracarias />} />
           <Route path="/admin/ordens" element={<AdminOrdens />} />
+          <Route path="/admin/ordem/:id" element={<AdminOrdemDetalhe />} />
           <Route path="/admin/clientes" element={<AdminClientes />} />
           <Route path="/admin" element={<Navigate to="/dashboard/admin" replace />} />
           

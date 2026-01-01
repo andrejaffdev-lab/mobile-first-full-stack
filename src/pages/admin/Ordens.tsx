@@ -333,7 +333,7 @@ const Ordens = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(ordem)}
+                  onClick={() => navigate(`/admin/ordem/${ordem.id}`)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
