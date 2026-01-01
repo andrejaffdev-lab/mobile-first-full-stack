@@ -14,7 +14,195 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ordens_servico: {
+        Row: {
+          avaliacao_cliente: number | null
+          certificado_enviado: boolean | null
+          certificado_gerado: boolean | null
+          certificado_pdf_url: string | null
+          cliente_bairro: string | null
+          cliente_cep: string | null
+          cliente_cidade: string | null
+          cliente_complemento: string | null
+          cliente_email: string | null
+          cliente_endereco: string | null
+          cliente_estado: string | null
+          cliente_nome: string
+          cliente_numero: string | null
+          cliente_telefone: string | null
+          colocacao_pelicula: boolean | null
+          created_at: string
+          data_agendamento: string | null
+          data_conclusao: string | null
+          data_contato_prestador: string | null
+          data_pagamento: string | null
+          data_solicitacao: string
+          forma_pagamento: string | null
+          foto_box_inicial: string | null
+          id: string
+          local_box: string | null
+          manut_analise_concluida: boolean | null
+          manut_analise_texto: string | null
+          manut_assinatura_prestador: string | null
+          manut_concluida: boolean | null
+          manut_foto_final: string | null
+          manut_foto_inicial: string | null
+          manut_foto_roldanas: string | null
+          manut_foto_trilho: string | null
+          manut_foto_vidro: string | null
+          manut_remontagem_concluida: boolean | null
+          manut_roldanas_trocadas: boolean | null
+          manut_trilho_analisado: boolean | null
+          manut_vidro_analisado: boolean | null
+          manut_vidro_substituir: boolean | null
+          manut_vidro_trincas: boolean | null
+          manutencao_anual: boolean | null
+          pelicula_concluida: boolean | null
+          pelicula_condicoes_verificadas: boolean | null
+          pelicula_foto_final: string | null
+          pelicula_foto_geral: string | null
+          pelicula_foto_porta: string | null
+          pelicula_foto_vidro_fixo: string | null
+          pelicula_limpeza_feita: boolean | null
+          pelicula_porta_aplicada: boolean | null
+          pelicula_porta_retirada: boolean | null
+          pelicula_remontagem_concluida: boolean | null
+          pelicula_vidro_fixo_aplicado: boolean | null
+          prestador_id: string | null
+          prestador_nome: string | null
+          prestador_telefone: string | null
+          status: string | null
+          updated_at: string
+          valor_manutencao: number | null
+          valor_pelicula: number | null
+          valor_total: number | null
+        }
+        Insert: {
+          avaliacao_cliente?: number | null
+          certificado_enviado?: boolean | null
+          certificado_gerado?: boolean | null
+          certificado_pdf_url?: string | null
+          cliente_bairro?: string | null
+          cliente_cep?: string | null
+          cliente_cidade?: string | null
+          cliente_complemento?: string | null
+          cliente_email?: string | null
+          cliente_endereco?: string | null
+          cliente_estado?: string | null
+          cliente_nome: string
+          cliente_numero?: string | null
+          cliente_telefone?: string | null
+          colocacao_pelicula?: boolean | null
+          created_at?: string
+          data_agendamento?: string | null
+          data_conclusao?: string | null
+          data_contato_prestador?: string | null
+          data_pagamento?: string | null
+          data_solicitacao?: string
+          forma_pagamento?: string | null
+          foto_box_inicial?: string | null
+          id?: string
+          local_box?: string | null
+          manut_analise_concluida?: boolean | null
+          manut_analise_texto?: string | null
+          manut_assinatura_prestador?: string | null
+          manut_concluida?: boolean | null
+          manut_foto_final?: string | null
+          manut_foto_inicial?: string | null
+          manut_foto_roldanas?: string | null
+          manut_foto_trilho?: string | null
+          manut_foto_vidro?: string | null
+          manut_remontagem_concluida?: boolean | null
+          manut_roldanas_trocadas?: boolean | null
+          manut_trilho_analisado?: boolean | null
+          manut_vidro_analisado?: boolean | null
+          manut_vidro_substituir?: boolean | null
+          manut_vidro_trincas?: boolean | null
+          manutencao_anual?: boolean | null
+          pelicula_concluida?: boolean | null
+          pelicula_condicoes_verificadas?: boolean | null
+          pelicula_foto_final?: string | null
+          pelicula_foto_geral?: string | null
+          pelicula_foto_porta?: string | null
+          pelicula_foto_vidro_fixo?: string | null
+          pelicula_limpeza_feita?: boolean | null
+          pelicula_porta_aplicada?: boolean | null
+          pelicula_porta_retirada?: boolean | null
+          pelicula_remontagem_concluida?: boolean | null
+          pelicula_vidro_fixo_aplicado?: boolean | null
+          prestador_id?: string | null
+          prestador_nome?: string | null
+          prestador_telefone?: string | null
+          status?: string | null
+          updated_at?: string
+          valor_manutencao?: number | null
+          valor_pelicula?: number | null
+          valor_total?: number | null
+        }
+        Update: {
+          avaliacao_cliente?: number | null
+          certificado_enviado?: boolean | null
+          certificado_gerado?: boolean | null
+          certificado_pdf_url?: string | null
+          cliente_bairro?: string | null
+          cliente_cep?: string | null
+          cliente_cidade?: string | null
+          cliente_complemento?: string | null
+          cliente_email?: string | null
+          cliente_endereco?: string | null
+          cliente_estado?: string | null
+          cliente_nome?: string
+          cliente_numero?: string | null
+          cliente_telefone?: string | null
+          colocacao_pelicula?: boolean | null
+          created_at?: string
+          data_agendamento?: string | null
+          data_conclusao?: string | null
+          data_contato_prestador?: string | null
+          data_pagamento?: string | null
+          data_solicitacao?: string
+          forma_pagamento?: string | null
+          foto_box_inicial?: string | null
+          id?: string
+          local_box?: string | null
+          manut_analise_concluida?: boolean | null
+          manut_analise_texto?: string | null
+          manut_assinatura_prestador?: string | null
+          manut_concluida?: boolean | null
+          manut_foto_final?: string | null
+          manut_foto_inicial?: string | null
+          manut_foto_roldanas?: string | null
+          manut_foto_trilho?: string | null
+          manut_foto_vidro?: string | null
+          manut_remontagem_concluida?: boolean | null
+          manut_roldanas_trocadas?: boolean | null
+          manut_trilho_analisado?: boolean | null
+          manut_vidro_analisado?: boolean | null
+          manut_vidro_substituir?: boolean | null
+          manut_vidro_trincas?: boolean | null
+          manutencao_anual?: boolean | null
+          pelicula_concluida?: boolean | null
+          pelicula_condicoes_verificadas?: boolean | null
+          pelicula_foto_final?: string | null
+          pelicula_foto_geral?: string | null
+          pelicula_foto_porta?: string | null
+          pelicula_foto_vidro_fixo?: string | null
+          pelicula_limpeza_feita?: boolean | null
+          pelicula_porta_aplicada?: boolean | null
+          pelicula_porta_retirada?: boolean | null
+          pelicula_remontagem_concluida?: boolean | null
+          pelicula_vidro_fixo_aplicado?: boolean | null
+          prestador_id?: string | null
+          prestador_nome?: string | null
+          prestador_telefone?: string | null
+          status?: string | null
+          updated_at?: string
+          valor_manutencao?: number | null
+          valor_pelicula?: number | null
+          valor_total?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
