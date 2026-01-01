@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
 
 // Preços configuráveis
 const PRECO_MANUTENCAO = 250.00;
@@ -148,11 +149,115 @@ const OrdemServico: React.FC = () => {
     toast.success("Pagamento confirmado!");
   };
 
-  // Gerar certificado
-  const gerarCertificado = () => {
-    const now = new Date().toISOString().slice(0, 16);
-    setDataConclusao(now);
-    toast.success("Certificado gerado e enviado por e-mail!");
+  // Estado para loading do PDF
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
+  // Gerar certificado PDF
+  const gerarCertificado = async () => {
+    setGerandoPdf(true);
+    try {
+      const now = new Date().toISOString().slice(0, 16);
+      setDataConclusao(now);
+      
+      // Criar PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      // Header
+      pdf.setFillColor(34, 139, 34);
+      pdf.rect(0, 0, pageWidth, 40, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(22);
+      pdf.text("CERTIFICADO DE MANUTENÇÃO", pageWidth / 2, 20, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text("Manutenção Anual de Box de Vidro", pageWidth / 2, 30, { align: 'center' });
+      
+      // Reset color
+      pdf.setTextColor(0, 0, 0);
+      let yPos = 55;
+      
+      // Cliente info
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("Dados do Cliente", 15, yPos);
+      yPos += 8;
+      pdf.setFontSize(11);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Nome: ${cliente.nome || 'Não informado'}`, 15, yPos);
+      yPos += 6;
+      pdf.text(`Telefone: ${cliente.telefone || 'Não informado'}`, 15, yPos);
+      yPos += 6;
+      pdf.text(`E-mail: ${cliente.email || 'Não informado'}`, 15, yPos);
+      yPos += 6;
+      const endereco = `${cliente.endereco || ''}, ${cliente.numero || ''} ${cliente.complemento || ''} - ${cliente.bairro || ''}, ${cliente.cidade || ''}-${cliente.estado || ''} CEP: ${cliente.cep || ''}`;
+      pdf.text(`Endereço: ${endereco.trim()}`, 15, yPos, { maxWidth: pageWidth - 30 });
+      yPos += 15;
+      
+      // Serviços
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("Serviços Realizados", 15, yPos);
+      yPos += 8;
+      pdf.setFontSize(11);
+      pdf.setFont(undefined, 'normal');
+      
+      boxes.forEach((box, index) => {
+        if (box.manutencaoSelecionada || box.peliculaSelecionada) {
+          pdf.text(`Box ${index + 1} - ${box.ambiente || 'Ambiente não informado'}:`, 15, yPos);
+          yPos += 6;
+          if (box.manutencaoSelecionada) {
+            pdf.text(`  • Manutenção Anual - ${formatCurrency(PRECO_MANUTENCAO)}`, 20, yPos);
+            yPos += 5;
+          }
+          if (box.peliculaSelecionada) {
+            pdf.text(`  • Troca de Película - ${formatCurrency(PRECO_PELICULA)}`, 20, yPos);
+            yPos += 5;
+          }
+          yPos += 3;
+        }
+      });
+      
+      yPos += 5;
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(`Valor Total: ${formatCurrency(calcularTotal())}`, 15, yPos);
+      yPos += 15;
+      
+      // Garantia
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(10, yPos - 5, pageWidth - 20, 25, 'F');
+      pdf.setFontSize(12);
+      pdf.text("GARANTIA DE 1 ANO", pageWidth / 2, yPos + 3, { align: 'center' });
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text("Este certificado garante a manutenção realizada pelo período de 1 (um) ano", pageWidth / 2, yPos + 10, { align: 'center' });
+      pdf.text("a partir da data de conclusão do serviço.", pageWidth / 2, yPos + 15, { align: 'center' });
+      yPos += 30;
+      
+      // Data e assinatura
+      pdf.setFontSize(11);
+      const dataFormatada = new Date().toLocaleDateString('pt-BR');
+      pdf.text(`Data de Conclusão: ${dataFormatada}`, 15, yPos);
+      yPos += 20;
+      
+      pdf.line(15, yPos, 90, yPos);
+      pdf.text("Assinatura do Prestador", 15, yPos + 5);
+      
+      pdf.line(pageWidth - 90, yPos, pageWidth - 15, yPos);
+      pdf.text("Assinatura do Cliente", pageWidth - 90, yPos + 5);
+      
+      // Abrir PDF em nova aba
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+      
+      toast.success("PDF gerado com sucesso!");
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.error("Erro ao gerar PDF");
+    } finally {
+      setGerandoPdf(false);
+    }
   };
 
   // Salvar ordem (primeira vez preenche data de solicitação)
@@ -554,8 +659,8 @@ const OrdemServico: React.FC = () => {
             <p className="text-muted-foreground mb-4">
               Gere o PDF do Certificado de Manutenção Anual de Box com todas as informações, fotos e garantia de 1 ano.
             </p>
-            <Button onClick={gerarCertificado} className="bg-success hover:bg-success/90 text-lg px-8 py-6">
-              <FileText className="w-5 h-5 mr-2" /> Gerar PDF e Enviar por E-mail
+            <Button onClick={gerarCertificado} disabled={gerandoPdf} className="bg-success hover:bg-success/90 text-lg px-8 py-6">
+              <FileText className="w-5 h-5 mr-2" /> {gerandoPdf ? "Gerando..." : "Gerar PDF"}
             </Button>
           </CardContent>
         </Card>
