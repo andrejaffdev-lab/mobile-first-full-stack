@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Wrench, Building2, MapPin, Filter, Search, X } from "lucide-react";
+import { ArrowLeft, Users, Wrench, Building2, MapPin, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 type FilterType = "todos" | "clientes" | "prestadores" | "vidracarias";
+
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
 
 const AdminMapa = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<FilterType>("todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
 
   const filters: { id: FilterType; label: string; icon: React.ElementType; color: string; count: number }[] = [
     { id: "todos", label: "Todos", icon: MapPin, color: "bg-muted text-foreground", count: 216 },
@@ -66,10 +73,10 @@ const AdminMapa = () => {
 
   const getMarkerColor = (type: string) => {
     switch (type) {
-      case "cliente": return "bg-primary";
-      case "prestador": return "bg-success";
-      case "vidracaria": return "bg-warning";
-      default: return "bg-muted";
+      case "cliente": return "#1e40af"; // primary blue
+      case "prestador": return "#16a34a"; // success green
+      case "vidracaria": return "#d97706"; // warning orange
+      default: return "#6b7280";
     }
   };
 
@@ -90,6 +97,71 @@ const AdminMapa = () => {
     { name: "Centro-Oeste", coverage: 38, color: "bg-warning" },
     { name: "Norte", coverage: 15, color: "bg-destructive" },
   ];
+
+  // Initialize Mapbox map
+  useEffect(() => {
+    if (!mapContainer.current || !MAPBOX_TOKEN) return;
+
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [-47.9, -15.8], // Center of Brazil
+      zoom: 3.5,
+    });
+
+    map.current.addControl(
+      new mapboxgl.NavigationControl({ visualizePitch: false }),
+      'top-right'
+    );
+
+    return () => {
+      map.current?.remove();
+    };
+  }, []);
+
+  // Update markers when filter or search changes
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Remove existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add new markers
+    filteredMarkers.forEach((markerData) => {
+      const el = document.createElement('div');
+      el.className = 'mapbox-marker';
+      el.style.cssText = `
+        width: 32px;
+        height: 32px;
+        background-color: ${getMarkerColor(markerData.type)};
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div style="padding: 8px; font-family: system-ui, sans-serif;">
+          <strong style="font-size: 14px;">${markerData.name}</strong>
+          <p style="margin: 4px 0 0; color: #666; font-size: 12px;">${markerData.location}</p>
+          ${'qualifications' in markerData ? `<p style="margin: 4px 0 0; color: #16a34a; font-size: 11px;">${markerData.qualifications} qualificações</p>` : ''}
+        </div>
+      `);
+
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([markerData.lng, markerData.lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+
+      markersRef.current.push(marker);
+    });
+  }, [filteredMarkers, activeFilter, searchQuery]);
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">
@@ -168,7 +240,7 @@ const AdminMapa = () => {
           ))}
         </motion.div>
 
-        {/* Map Visualization */}
+        {/* Mapbox Map */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -176,75 +248,35 @@ const AdminMapa = () => {
           className="mt-4"
         >
           <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-            {/* Stylized Map of Brazil */}
-            <div className="relative h-72 bg-gradient-to-br from-primary/5 to-accent/5 p-4">
-              <svg viewBox="0 0 400 350" className="w-full h-full">
-                {/* Simplified Brazil Map Outline */}
-                <path
-                  d="M120,30 L180,20 L250,25 L320,50 L350,100 L370,150 L380,200 L370,250 L340,290 L280,320 L220,330 L160,320 L120,280 L80,220 L70,160 L80,100 L100,50 Z"
-                  fill="hsl(210, 30%, 95%)"
-                  stroke="hsl(214, 32%, 85%)"
-                  strokeWidth="2"
-                />
-                
-                {/* Region divisions */}
-                <path d="M280,120 L350,100" stroke="hsl(214, 32%, 85%)" strokeWidth="1" strokeDasharray="4"/>
-                <path d="M220,180 L280,120" stroke="hsl(214, 32%, 85%)" strokeWidth="1" strokeDasharray="4"/>
-                <path d="M160,200 L220,180" stroke="hsl(214, 32%, 85%)" strokeWidth="1" strokeDasharray="4"/>
-                <path d="M160,200 L120,280" stroke="hsl(214, 32%, 85%)" strokeWidth="1" strokeDasharray="4"/>
-                
-                {/* Markers */}
-                {filteredMarkers.slice(0, 10).map((marker, index) => {
-                  // Convert lat/lng to SVG coordinates (simplified)
-                  const x = 200 + (marker.lng + 50) * 3;
-                  const y = 180 + (marker.lat + 20) * 3;
-                  const Icon = getMarkerIcon(marker.type);
-                  
-                  return (
-                    <g key={`${marker.type}-${marker.id}`}>
-                      <motion.circle
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3 + index * 0.05 }}
-                        cx={x}
-                        cy={y}
-                        r="12"
-                        className={`${getMarkerColor(marker.type)} opacity-20`}
-                        fill="currentColor"
-                      />
-                      <motion.circle
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.3 + index * 0.05 }}
-                        cx={x}
-                        cy={y}
-                        r="6"
-                        className={getMarkerColor(marker.type)}
-                        fill="currentColor"
-                      />
-                    </g>
-                  );
-                })}
-              </svg>
-              
-              {/* Legend */}
-              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur rounded-lg p-3 shadow-md">
-                <div className="flex items-center gap-4 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-primary"></div>
-                    <span>Clientes</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-success"></div>
-                    <span>Prestadores</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-warning"></div>
-                    <span>Vidraçarias</span>
+            {MAPBOX_TOKEN ? (
+              <div className="relative">
+                <div ref={mapContainer} className="h-72 w-full" />
+                {/* Legend */}
+                <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur rounded-lg p-3 shadow-md">
+                  <div className="flex items-center gap-4 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      <span>Clientes</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-success"></div>
+                      <span>Prestadores</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 rounded-full bg-warning"></div>
+                      <span>Vidraçarias</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="h-72 flex items-center justify-center bg-muted/50">
+                <p className="text-muted-foreground text-center px-4">
+                  Token do Mapbox não configurado.<br />
+                  <span className="text-sm">Configure VITE_MAPBOX_PUBLIC_TOKEN nas variáveis de ambiente.</span>
+                </p>
+              </div>
+            )}
           </div>
         </motion.div>
 
