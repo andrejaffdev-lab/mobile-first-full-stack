@@ -3,30 +3,104 @@ import { motion } from "framer-motion";
 import { Plus, Shield, Clock, FileText, Bell, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface Cliente {
+  id: string;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  endereco: string | null;
+  cidade: string | null;
+  estado: string | null;
+}
+
+interface OrdemServico {
+  id: string;
+  numero_ordem: string | null;
+  status: string | null;
+  data_solicitacao: string;
+  observacoes: string | null;
+}
 
 const ClienteDashboard = () => {
   const navigate = useNavigate();
+  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [ordens, setOrdens] = useState<OrdemServico[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClienteData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        // Buscar dados do cliente
+        const { data: clienteData, error: clienteError } = await supabase
+          .from('clientes')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (clienteError) {
+          console.error('Erro ao buscar cliente:', clienteError);
+        } else {
+          setCliente(clienteData);
+        }
+
+        // Buscar ordens de serviço do cliente
+        if (clienteData) {
+          const { data: ordensData, error: ordensError } = await supabase
+            .from('ordens_servico')
+            .select('*')
+            .eq('cliente_id', clienteData.id)
+            .order('data_solicitacao', { ascending: false })
+            .limit(5);
+
+          if (ordensError) {
+            console.error('Erro ao buscar ordens:', ordensError);
+          } else {
+            setOrdens(ordensData || []);
+          }
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClienteData();
+  }, [navigate]);
+
+  const getStatusLabel = (status: string | null) => {
+    switch (status) {
+      case 'concluido': return 'Concluído';
+      case 'andamento': return 'Em Andamento';
+      case 'pendente': return 'Pendente';
+      case 'cancelado': return 'Cancelado';
+      default: return 'Pendente';
+    }
+  };
+
+  const getStatusColor = (status: string | null) => {
+    switch (status) {
+      case 'concluido': return 'bg-success/10 text-success';
+      case 'andamento': return 'bg-warning/10 text-warning';
+      case 'pendente': return 'bg-primary/10 text-primary';
+      case 'cancelado': return 'bg-destructive/10 text-destructive';
+      default: return 'bg-primary/10 text-primary';
+    }
+  };
 
   const stats = [
     { label: "Garantia", value: "ATIVA", icon: Shield, color: "text-success" },
     { label: "Próxima Manutenção", value: "Mar 2025", icon: Clock, color: "text-primary" },
-  ];
-
-  const recentOrders = [
-    {
-      id: "1",
-      title: "Manutenção Preventiva",
-      date: "15 Mar 2024",
-      status: "Concluído",
-      statusColor: "bg-success/10 text-success",
-    },
-    {
-      id: "2",
-      title: "Aplicação de Película",
-      date: "20 Jan 2024",
-      status: "Em Andamento",
-      statusColor: "bg-warning/10 text-warning",
-    },
   ];
 
   return (
@@ -41,7 +115,7 @@ const ClienteDashboard = () => {
           <div>
             <p className="text-white/70 text-sm">Olá,</p>
             <h1 className="text-2xl font-bold text-white font-display">
-              João Silva
+              {loading ? 'Carregando...' : (cliente?.nome || 'Cliente')}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -113,29 +187,39 @@ const ClienteDashboard = () => {
           transition={{ delay: 0.3 }}
           className="space-y-3"
         >
-          {recentOrders.map((order, index) => (
-            <motion.div
-              key={order.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-              className="premium-card flex items-center gap-4"
-              onClick={() => navigate(`/orders/${order.id}`)}
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-foreground">{order.title}</h3>
-                <p className="text-sm text-muted-foreground">{order.date}</p>
-              </div>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium ${order.statusColor}`}
+          {ordens.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Nenhuma ordem de serviço encontrada
+            </p>
+          ) : (
+            ordens.map((ordem, index) => (
+              <motion.div
+                key={ordem.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
+                className="premium-card flex items-center gap-4"
+                onClick={() => navigate(`/orders/${ordem.id}`)}
               >
-                {order.status}
-              </span>
-            </motion.div>
-          ))}
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground">
+                    {ordem.numero_ordem || 'Ordem de Serviço'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(ordem.data_solicitacao).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(ordem.status)}`}
+                >
+                  {getStatusLabel(ordem.status)}
+                </span>
+              </motion.div>
+            ))
+          )}
         </motion.div>
       </div>
 
