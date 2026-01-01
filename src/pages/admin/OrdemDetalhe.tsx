@@ -106,25 +106,65 @@ const OrdemDetalhe = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentPhotoField, setCurrentPhotoField] = useState<string>("");
 
-  useEffect(() => {
-    if (id) {
-      fetchOrdem();
+  const isUuid = (value: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
+  const createNovaOrdemAndRedirect = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("ordens_servico")
+        .insert({
+          cliente_nome: "Novo Cliente",
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      navigate(`/admin/ordem/${data.id}`, { replace: true });
+    } catch (error: any) {
+      console.error("Erro ao criar nova ordem:", error);
+      toast.error("Erro ao criar nova ordem");
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (!id) return;
+
+    // /admin/ordem/nova -> cria a ordem no backend e redireciona
+    if (id === "nova") {
+      createNovaOrdemAndRedirect();
+      return;
+    }
+
+    // Evita erro 400 quando o id não é UUID (ex: "1")
+    if (!isUuid(id)) {
+      setOrdem(null);
+      setLoading(false);
+      toast.error("ID da ordem inválido");
+      return;
+    }
+
+    fetchOrdem(id);
   }, [id]);
 
-  const fetchOrdem = async () => {
+  const fetchOrdem = async (ordemId: string) => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from("ordens_servico")
         .select("*")
-        .eq("id", id)
-        .single();
+        .eq("id", ordemId)
+        .maybeSingle();
 
       if (error) throw error;
-      setOrdem(data);
+      setOrdem((data as OrdemServico) ?? null);
     } catch (error: any) {
       console.error("Erro ao buscar ordem:", error);
       toast.error("Erro ao carregar ordem");
+      setOrdem(null);
     } finally {
       setLoading(false);
     }
@@ -215,7 +255,7 @@ const OrdemDetalhe = () => {
       if (response.error) throw response.error;
 
       toast.success("Certificado enviado com sucesso!");
-      await fetchOrdem(); // Recarregar para atualizar status
+      await fetchOrdem(ordem.id); // Recarregar para atualizar status
     } catch (error: any) {
       console.error("Erro ao enviar certificado:", error);
       toast.error("Erro ao enviar certificado");
