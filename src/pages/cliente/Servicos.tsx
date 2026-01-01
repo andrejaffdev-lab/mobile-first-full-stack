@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -13,6 +13,9 @@ import {
   Filter
 } from "lucide-react";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 type StatusType = "todos" | "concluido" | "andamento" | "pendente";
 
@@ -26,46 +29,6 @@ interface Order {
   value: string;
   hasCertificate?: boolean;
 }
-
-const orders: Order[] = [
-  {
-    id: "1",
-    type: "manutencao",
-    title: "Manutenção Preventiva Anual",
-    date: "15 Mar 2024",
-    status: "concluido",
-    prestador: "João Souza",
-    value: "R$ 200,00",
-    hasCertificate: true,
-  },
-  {
-    id: "2",
-    type: "pelicula",
-    title: "Aplicação de Película",
-    date: "20 Jan 2024",
-    status: "andamento",
-    prestador: "Marcelo Lima",
-    value: "R$ 255,00",
-  },
-  {
-    id: "3",
-    type: "manutencao",
-    title: "Manutenção Preventiva Anual",
-    date: "10 Mar 2023",
-    status: "concluido",
-    prestador: "Pedro Montador",
-    value: "R$ 180,00",
-    hasCertificate: true,
-  },
-  {
-    id: "4",
-    type: "manutencao",
-    title: "Manutenção Preventiva Anual",
-    date: "Agendado para 20 Abr 2025",
-    status: "pendente",
-    value: "R$ 200,00",
-  },
-];
 
 const statusConfig = {
   concluido: {
@@ -91,6 +54,88 @@ const statusConfig = {
 const Servicos = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<StatusType>("todos");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const carregarServicos = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar cliente pelo user_id
+      const { data: cliente } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!cliente) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar ordens de serviço
+      const { data: ordens } = await supabase
+        .from('ordens_servico')
+        .select(`
+          *,
+          prestador:prestadores_servico(nome)
+        `)
+        .eq('cliente_id', cliente.id)
+        .order('created_at', { ascending: false });
+
+      if (!ordens) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar certificados
+      const { data: certificados } = await supabase
+        .from('certificados')
+        .select('ordem_id')
+        .in('ordem_id', ordens.map(o => o.id));
+
+      const certificadoIds = new Set(certificados?.map(c => c.ordem_id) || []);
+
+      // Verificar tipo de serviço
+      const { data: manutencoes } = await supabase
+        .from('processo_manutencao')
+        .select('ordem_id')
+        .in('ordem_id', ordens.map(o => o.id));
+
+      const manutencaoIds = new Set(manutencoes?.map(m => m.ordem_id) || []);
+
+      const mappedOrders: Order[] = ordens.map(ordem => {
+        const isManutencao = manutencaoIds.has(ordem.id);
+        const mapStatus = (status: string): "concluido" | "andamento" | "pendente" => {
+          if (status === 'concluido') return 'concluido';
+          if (status === 'andamento') return 'andamento';
+          return 'pendente';
+        };
+
+        return {
+          id: ordem.id,
+          type: isManutencao ? "manutencao" : "pelicula",
+          title: isManutencao ? "Manutenção Preventiva" : "Aplicação de Película",
+          date: ordem.data_solicitacao 
+            ? format(new Date(ordem.data_solicitacao), "dd MMM yyyy", { locale: ptBR })
+            : '',
+          status: mapStatus(ordem.status || 'pendente'),
+          prestador: ordem.prestador?.nome,
+          value: `R$ ${Number(ordem.valor_total || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+          hasCertificate: certificadoIds.has(ordem.id),
+        };
+      });
+
+      setOrders(mappedOrders);
+      setIsLoading(false);
+    };
+
+    carregarServicos();
+  }, []);
 
   const filteredOrders = orders.filter((order) => {
     if (filter === "todos") return true;
@@ -137,85 +182,91 @@ const Servicos = () => {
 
       {/* Orders List */}
       <div className="px-6 py-6">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-4"
-        >
-          {filteredOrders.map((order, index) => {
-            const config = statusConfig[order.status];
-            const StatusIcon = config.icon;
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            {filteredOrders.map((order, index) => {
+              const config = statusConfig[order.status];
+              const StatusIcon = config.icon;
 
-            return (
-              <motion.div
-                key={order.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => navigate(`/servico/${order.id}`)}
-                className="premium-card cursor-pointer"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    {order.type === "manutencao" ? (
-                      <Shield className="w-6 h-6 text-primary" />
-                    ) : (
-                      <Film className="w-6 h-6 text-primary" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-foreground line-clamp-1">
-                        {order.title}
-                      </h3>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+              return (
+                <motion.div
+                  key={order.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => navigate(`/servico/${order.id}`)}
+                  className="premium-card cursor-pointer"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      {order.type === "manutencao" ? (
+                        <Shield className="w-6 h-6 text-primary" />
+                      ) : (
+                        <Film className="w-6 h-6 text-primary" />
+                      )}
                     </div>
 
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {order.date}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-foreground line-clamp-1">
+                          {order.title}
+                        </h3>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                      </div>
 
-                    {order.prestador && (
-                      <p className="text-sm text-muted-foreground">
-                        Prestador: {order.prestador}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {order.date}
                       </p>
-                    )}
 
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        <StatusIcon className={`w-4 h-4 ${config.iconColor}`} />
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${config.color}`}>
-                          {config.label}
+                      {order.prestador && (
+                        <p className="text-sm text-muted-foreground">
+                          Prestador: {order.prestador}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                        <div className="flex items-center gap-2">
+                          <StatusIcon className={`w-4 h-4 ${config.iconColor}`} />
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${config.color}`}>
+                            {config.label}
+                          </span>
+                        </div>
+                        <span className="font-bold text-primary font-display">
+                          {order.value}
                         </span>
                       </div>
-                      <span className="font-bold text-primary font-display">
-                        {order.value}
-                      </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Certificate Button */}
-                {order.hasCertificate && (
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Download certificate logic
-                    }}
-                    className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl bg-success/10 text-success font-medium text-sm"
-                  >
-                    <Download className="w-4 h-4" />
-                    Baixar Certificado
-                  </motion.button>
-                )}
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  {/* Certificate Button */}
+                  {order.hasCertificate && (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Download certificate logic
+                      }}
+                      className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl bg-success/10 text-success font-medium text-sm"
+                    >
+                      <Download className="w-4 h-4" />
+                      Baixar Certificado
+                    </motion.button>
+                  )}
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
 
-        {filteredOrders.length === 0 && (
+        {!isLoading && filteredOrders.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -223,7 +274,9 @@ const Servicos = () => {
           >
             <FileText className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
             <p className="text-muted-foreground">
-              Nenhum serviço encontrado com esse filtro.
+              {orders.length === 0 
+                ? "Nenhum serviço encontrado." 
+                : "Nenhum serviço encontrado com esse filtro."}
             </p>
           </motion.div>
         )}

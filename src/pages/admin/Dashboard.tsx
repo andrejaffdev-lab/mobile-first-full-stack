@@ -5,54 +5,161 @@ import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface RecentUser {
+  id: string;
+  name: string;
+  type: "Cliente" | "Prestador" | "Vidraçaria";
+  date: string;
+  status: string;
+}
+
+interface PendingApproval {
+  id: string;
+  name: string;
+  type: "Prestador" | "Vidraçaria";
+  location: string;
+}
 
 const AdminDashboard = () => {
   const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
+  const [stats, setStats] = useState([
+    { label: "Clientes", value: "0", icon: Users, color: "bg-primary/10 text-primary", link: "/admin/clientes" },
+    { label: "Prestadores", value: "0", icon: Wrench, color: "bg-success/10 text-success", link: "/admin/prestadores" },
+    { label: "Vidraçarias", value: "0", icon: Building2, color: "bg-warning/10 text-warning", link: "/admin/vidracarias" },
+    { label: "Ordem de Serviços", value: "0", icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/admin/ordens" },
+  ]);
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const stats = [
-    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary", link: "/admin/clientes" },
-    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success", link: "/admin/prestadores" },
-    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning", link: "/admin/vidracarias" },
-    { label: "Ordem de Serviços", value: "89", icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/admin/ordens" },
-  ];
-
   const monthlyData = [
-    { month: "Jan", receita: 45000, despesas: 28000 },
-    { month: "Fev", receita: 52000, despesas: 31000 },
-    { month: "Mar", receita: 48000, despesas: 29000 },
-    { month: "Abr", receita: 61000, despesas: 35000 },
-    { month: "Mai", receita: 55000, despesas: 32000 },
-    { month: "Jun", receita: 67000, despesas: 38000 },
-    { month: "Jul", receita: 72000, despesas: 41000 },
-    { month: "Ago", receita: 69000, despesas: 39000 },
-    { month: "Set", receita: 78000, despesas: 44000 },
-    { month: "Out", receita: 82000, despesas: 46000 },
-    { month: "Nov", receita: 91000, despesas: 52000 },
-    { month: "Dez", receita: 98000, despesas: 55000 },
+    { month: "Jan", receita: 0, despesas: 0 },
+    { month: "Fev", receita: 0, despesas: 0 },
+    { month: "Mar", receita: 0, despesas: 0 },
+    { month: "Abr", receita: 0, despesas: 0 },
+    { month: "Mai", receita: 0, despesas: 0 },
+    { month: "Jun", receita: 0, despesas: 0 },
+    { month: "Jul", receita: 0, despesas: 0 },
+    { month: "Ago", receita: 0, despesas: 0 },
+    { month: "Set", receita: 0, despesas: 0 },
+    { month: "Out", receita: 0, despesas: 0 },
+    { month: "Nov", receita: 0, despesas: 0 },
+    { month: "Dez", receita: 0, despesas: 0 },
   ];
 
   const yearlyData = [
-    { year: "2019", receita: 420000, lucro: 168000 },
-    { year: "2020", receita: 380000, lucro: 140000 },
-    { year: "2021", receita: 520000, lucro: 210000 },
-    { year: "2022", receita: 680000, lucro: 285000 },
-    { year: "2023", receita: 820000, lucro: 355000 },
-    { year: "2024", receita: 918000, lucro: 412000 },
+    { year: "2019", receita: 0, lucro: 0 },
+    { year: "2020", receita: 0, lucro: 0 },
+    { year: "2021", receita: 0, lucro: 0 },
+    { year: "2022", receita: 0, lucro: 0 },
+    { year: "2023", receita: 0, lucro: 0 },
+    { year: "2024", receita: 0, lucro: 0 },
   ];
 
-  const recentUsers = [
-    { name: "Maria Silva", type: "Cliente", date: "Hoje, 14:30", status: "Ativo" },
-    { name: "João Montador", type: "Prestador", date: "Hoje, 11:20", status: "Pendente" },
-    { name: "Vidraçaria Central", type: "Vidraçaria", date: "Ontem, 16:45", status: "Ativo" },
-    { name: "Carlos Oliveira", type: "Prestador", date: "Ontem, 09:15", status: "Pendente" },
-  ];
+  useEffect(() => {
+    const carregarDados = async () => {
+      setIsLoading(true);
+      try {
+        // Carregar contagens
+        const [clientesRes, prestadoresRes, vidracariasRes, ordensRes] = await Promise.all([
+          supabase.from('clientes').select('*', { count: 'exact', head: true }),
+          supabase.from('prestadores_servico').select('*', { count: 'exact', head: true }),
+          supabase.from('vidracarias').select('*', { count: 'exact', head: true }),
+          supabase.from('ordens_servico').select('*', { count: 'exact', head: true }),
+        ]);
 
-  const pendingApprovals = [
-    { name: "Ricardo Santos", type: "Prestador", qualifications: 5, location: "São Paulo, SP" },
-    { name: "Pedro Almeida", type: "Prestador", qualifications: 3, location: "Rio de Janeiro, RJ" },
-    { name: "Glass Premium", type: "Vidraçaria", qualifications: 0, location: "Belo Horizonte, MG" },
-  ];
+        setStats([
+          { label: "Clientes", value: String(clientesRes.count || 0), icon: Users, color: "bg-primary/10 text-primary", link: "/admin/clientes" },
+          { label: "Prestadores", value: String(prestadoresRes.count || 0), icon: Wrench, color: "bg-success/10 text-success", link: "/admin/prestadores" },
+          { label: "Vidraçarias", value: String(vidracariasRes.count || 0), icon: Building2, color: "bg-warning/10 text-warning", link: "/admin/vidracarias" },
+          { label: "Ordem de Serviços", value: String(ordensRes.count || 0), icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/admin/ordens" },
+        ]);
+
+        // Carregar usuários recentes
+        const [recentClientes, recentPrestadores, recentVidracarias] = await Promise.all([
+          supabase.from('clientes').select('id, nome, status, created_at').order('created_at', { ascending: false }).limit(2),
+          supabase.from('prestadores_servico').select('id, nome, status, created_at').order('created_at', { ascending: false }).limit(2),
+          supabase.from('vidracarias').select('id, razao_social, nome_fantasia, status, created_at').order('created_at', { ascending: false }).limit(2),
+        ]);
+
+        const formatDate = (dateStr: string) => {
+          const date = new Date(dateStr);
+          const today = new Date();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          if (date.toDateString() === today.toDateString()) {
+            return `Hoje, ${format(date, 'HH:mm')}`;
+          } else if (date.toDateString() === yesterday.toDateString()) {
+            return `Ontem, ${format(date, 'HH:mm')}`;
+          }
+          return format(date, "dd/MM/yyyy, HH:mm");
+        };
+
+        const recent: RecentUser[] = [
+          ...(recentClientes.data || []).map(c => ({
+            id: c.id,
+            name: c.nome,
+            type: "Cliente" as const,
+            date: formatDate(c.created_at),
+            status: c.status === 'ativo' ? 'Ativo' : 'Pendente'
+          })),
+          ...(recentPrestadores.data || []).map(p => ({
+            id: p.id,
+            name: p.nome,
+            type: "Prestador" as const,
+            date: formatDate(p.created_at),
+            status: p.status === 'aprovado' || p.status === 'ativo' ? 'Ativo' : 'Pendente'
+          })),
+          ...(recentVidracarias.data || []).map(v => ({
+            id: v.id,
+            name: v.nome_fantasia || v.razao_social,
+            type: "Vidraçaria" as const,
+            date: formatDate(v.created_at),
+            status: v.status === 'aprovado' || v.status === 'ativo' ? 'Ativo' : 'Pendente'
+          })),
+        ].sort((a, b) => {
+          // Simple sort by date string for now
+          return 0;
+        }).slice(0, 4);
+
+        setRecentUsers(recent);
+
+        // Carregar aprovações pendentes
+        const [pendingPrestadores, pendingVidracarias] = await Promise.all([
+          supabase.from('prestadores_servico').select('id, nome, cidade, estado').eq('status', 'pendente').limit(3),
+          supabase.from('vidracarias').select('id, razao_social, nome_fantasia, cidade, estado').eq('status', 'pendente').limit(3),
+        ]);
+
+        const pending: PendingApproval[] = [
+          ...(pendingPrestadores.data || []).map(p => ({
+            id: p.id,
+            name: p.nome,
+            type: "Prestador" as const,
+            location: `${p.cidade || ''}, ${p.estado || ''}`
+          })),
+          ...(pendingVidracarias.data || []).map(v => ({
+            id: v.id,
+            name: v.nome_fantasia || v.razao_social,
+            type: "Vidraçaria" as const,
+            location: `${v.cidade || ''}, ${v.estado || ''}`
+          })),
+        ].slice(0, 3);
+
+        setPendingApprovals(pending);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    carregarDados();
+  }, []);
 
   // Carregar contador de mensagens não lidas
   useEffect(() => {
@@ -188,43 +295,45 @@ const AdminDashboard = () => {
         </motion.div>
 
         {/* Pending Approvals */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="mt-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground font-display">
-              Aguardando Aprovação
-            </h2>
-            <span className="bg-warning/10 text-warning px-2 py-1 rounded-full text-xs font-medium">
-              {pendingApprovals.length} pendentes
-            </span>
-          </div>
-          <div className="space-y-3">
-            {pendingApprovals.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-warning" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.type} • {item.location}
-                  </p>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {pendingApprovals.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mt-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground font-display">
+                Aguardando Aprovação
+              </h2>
+              <span className="bg-warning/10 text-warning px-2 py-1 rounded-full text-xs font-medium">
+                {pendingApprovals.length} pendentes
+              </span>
+            </div>
+            <div className="space-y-3">
+              {pendingApprovals.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+                >
+                  <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-warning" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{item.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.type} • {item.location}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Balance Chart - Last 12 Months */}
         <motion.div
@@ -321,45 +430,47 @@ const AdminDashboard = () => {
         </motion.div>
 
         {/* Recent Users */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6"
-        >
-          <h2 className="text-lg font-semibold text-foreground font-display mb-4">
-            Cadastros Recentes
-          </h2>
-          <div className="space-y-3">
-            {recentUsers.map((user, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  user.type === 'Cliente' ? 'bg-primary/10' : 
-                  user.type === 'Prestador' ? 'bg-success/10' : 'bg-warning/10'
-                }`}>
-                  {user.type === 'Cliente' ? <Users className="w-5 h-5 text-primary" /> :
-                   user.type === 'Prestador' ? <Wrench className="w-5 h-5 text-success" /> :
-                   <Building2 className="w-5 h-5 text-warning" />}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.type} • {user.date}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  user.status === 'Ativo' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
-                }`}>
-                  {user.status}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {recentUsers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6"
+          >
+            <h2 className="text-lg font-semibold text-foreground font-display mb-4">
+              Cadastros Recentes
+            </h2>
+            <div className="space-y-3">
+              {recentUsers.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    user.type === 'Cliente' ? 'bg-primary/10' : 
+                    user.type === 'Prestador' ? 'bg-success/10' : 'bg-warning/10'
+                  }`}>
+                    {user.type === 'Cliente' ? <Users className="w-5 h-5 text-primary" /> :
+                     user.type === 'Prestador' ? <Wrench className="w-5 h-5 text-success" /> :
+                     <Building2 className="w-5 h-5 text-warning" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.type} • {user.date}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    user.status === 'Ativo' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                  }`}>
+                    {user.status}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

@@ -408,9 +408,9 @@ const LandingPage = () => {
           </div>
 
           <div className="flex gap-4 mb-8">
-            <a href="tel:11999999999" className="flex items-center gap-2 text-sm text-background/70 hover:text-background transition-colors">
-              <Phone className="w-4 h-4" />
-              (11) 99999-9999
+            <a href="mailto:contato@boxemgarantia.com.br" className="flex items-center gap-2 text-sm text-background/70 hover:text-background transition-colors">
+              <Mail className="w-4 h-4" />
+              contato@boxemgarantia.com.br
             </a>
           </div>
 

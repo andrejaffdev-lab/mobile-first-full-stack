@@ -3,10 +3,21 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Users, Wrench, Building2, MapPin, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 type FilterType = "todos" | "clientes" | "prestadores" | "vidracarias";
+
+interface MarkerData {
+  id: string;
+  name: string;
+  location: string;
+  lat: number;
+  lng: number;
+  type: "cliente" | "prestador" | "vidracaria";
+  qualifications?: number;
+}
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
 
@@ -14,56 +25,97 @@ const AdminMapa = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<FilterType>("todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const [markers, setMarkers] = useState<{
+    clientes: MarkerData[];
+    prestadores: MarkerData[];
+    vidracarias: MarkerData[];
+  }>({ clientes: [], prestadores: [], vidracarias: [] });
+  const [counts, setCounts] = useState({ total: 0, clientes: 0, prestadores: 0, vidracarias: 0 });
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
 
-  const filters: { id: FilterType; label: string; icon: React.ElementType; color: string; count: number }[] = [
-    { id: "todos", label: "Todos", icon: MapPin, color: "bg-muted text-foreground", count: 216 },
-    { id: "clientes", label: "Clientes", icon: Users, color: "bg-primary/10 text-primary", count: 156 },
-    { id: "prestadores", label: "Prestadores", icon: Wrench, color: "bg-success/10 text-success", count: 48 },
-    { id: "vidracarias", label: "Vidraçarias", icon: Building2, color: "bg-warning/10 text-warning", count: 12 },
-  ];
+  useEffect(() => {
+    const carregarDados = async () => {
+      const [clientesRes, prestadoresRes, vidracariasRes] = await Promise.all([
+        supabase.from('clientes').select('id, nome, cidade, estado, latitude, longitude'),
+        supabase.from('prestadores_servico').select('id, nome, cidade, estado, latitude, longitude, qualificacoes'),
+        supabase.from('vidracarias').select('id, razao_social, nome_fantasia, cidade, estado, latitude, longitude'),
+      ]);
 
-  // Mock data for map markers
-  const markers = {
-    clientes: [
-      { id: 1, name: "Maria Silva", location: "São Paulo, SP", lat: -23.55, lng: -46.63 },
-      { id: 2, name: "João Santos", location: "Rio de Janeiro, RJ", lat: -22.91, lng: -43.17 },
-      { id: 3, name: "Ana Costa", location: "Belo Horizonte, MG", lat: -19.92, lng: -43.94 },
-      { id: 4, name: "Pedro Oliveira", location: "Curitiba, PR", lat: -25.43, lng: -49.27 },
-      { id: 5, name: "Carla Souza", location: "Porto Alegre, RS", lat: -30.03, lng: -51.23 },
-    ],
-    prestadores: [
-      { id: 1, name: "Ricardo Montador", location: "São Paulo, SP", lat: -23.56, lng: -46.65, qualifications: 5 },
-      { id: 2, name: "Fernando Silva", location: "Campinas, SP", lat: -22.91, lng: -47.06, qualifications: 4 },
-      { id: 3, name: "Carlos Lima", location: "Salvador, BA", lat: -12.97, lng: -38.50, qualifications: 3 },
-      { id: 4, name: "Marcos Alves", location: "Fortaleza, CE", lat: -3.73, lng: -38.52, qualifications: 6 },
-      { id: 5, name: "José Pereira", location: "Recife, PE", lat: -8.05, lng: -34.90, qualifications: 4 },
-    ],
-    vidracarias: [
-      { id: 1, name: "Vidraçaria Central", location: "São Paulo, SP", lat: -23.54, lng: -46.64 },
-      { id: 2, name: "Glass Premium", location: "Belo Horizonte, MG", lat: -19.93, lng: -43.93 },
-      { id: 3, name: "Vidros & Cia", location: "Brasília, DF", lat: -15.79, lng: -47.88 },
-      { id: 4, name: "Box Master", location: "Goiânia, GO", lat: -16.68, lng: -49.25 },
-    ],
-  };
+      const clientesData: MarkerData[] = (clientesRes.data || [])
+        .filter(c => c.latitude && c.longitude)
+        .map(c => ({
+          id: c.id,
+          name: c.nome,
+          location: `${c.cidade || ''}, ${c.estado || ''}`,
+          lat: Number(c.latitude),
+          lng: Number(c.longitude),
+          type: "cliente" as const
+        }));
+
+      const prestadoresData: MarkerData[] = (prestadoresRes.data || [])
+        .filter(p => p.latitude && p.longitude)
+        .map(p => ({
+          id: p.id,
+          name: p.nome,
+          location: `${p.cidade || ''}, ${p.estado || ''}`,
+          lat: Number(p.latitude),
+          lng: Number(p.longitude),
+          type: "prestador" as const,
+          qualifications: p.qualificacoes?.length || 0
+        }));
+
+      const vidracariasData: MarkerData[] = (vidracariasRes.data || [])
+        .filter(v => v.latitude && v.longitude)
+        .map(v => ({
+          id: v.id,
+          name: v.nome_fantasia || v.razao_social,
+          location: `${v.cidade || ''}, ${v.estado || ''}`,
+          lat: Number(v.latitude),
+          lng: Number(v.longitude),
+          type: "vidracaria" as const
+        }));
+
+      setMarkers({
+        clientes: clientesData,
+        prestadores: prestadoresData,
+        vidracarias: vidracariasData
+      });
+
+      setCounts({
+        total: clientesData.length + prestadoresData.length + vidracariasData.length,
+        clientes: clientesRes.count || clientesData.length,
+        prestadores: prestadoresRes.count || prestadoresData.length,
+        vidracarias: vidracariasRes.count || vidracariasData.length
+      });
+    };
+
+    carregarDados();
+  }, []);
+
+  const filters: { id: FilterType; label: string; icon: React.ElementType; color: string; count: number }[] = [
+    { id: "todos", label: "Todos", icon: MapPin, color: "bg-muted text-foreground", count: counts.total },
+    { id: "clientes", label: "Clientes", icon: Users, color: "bg-primary/10 text-primary", count: counts.clientes },
+    { id: "prestadores", label: "Prestadores", icon: Wrench, color: "bg-success/10 text-success", count: counts.prestadores },
+    { id: "vidracarias", label: "Vidraçarias", icon: Building2, color: "bg-warning/10 text-warning", count: counts.vidracarias },
+  ];
 
   const getFilteredMarkers = () => {
     if (activeFilter === "todos") {
       return [
-        ...markers.clientes.map(m => ({ ...m, type: "cliente" as const })),
-        ...markers.prestadores.map(m => ({ ...m, type: "prestador" as const })),
-        ...markers.vidracarias.map(m => ({ ...m, type: "vidracaria" as const })),
+        ...markers.clientes,
+        ...markers.prestadores,
+        ...markers.vidracarias,
       ];
     }
     if (activeFilter === "clientes") {
-      return markers.clientes.map(m => ({ ...m, type: "cliente" as const }));
+      return markers.clientes;
     }
     if (activeFilter === "prestadores") {
-      return markers.prestadores.map(m => ({ ...m, type: "prestador" as const }));
+      return markers.prestadores;
     }
-    return markers.vidracarias.map(m => ({ ...m, type: "vidracaria" as const }));
+    return markers.vidracarias;
   };
 
   const filteredMarkers = getFilteredMarkers().filter(m => 
@@ -73,9 +125,9 @@ const AdminMapa = () => {
 
   const getMarkerColor = (type: string) => {
     switch (type) {
-      case "cliente": return "#1e40af"; // primary blue
-      case "prestador": return "#16a34a"; // success green
-      case "vidracaria": return "#d97706"; // warning orange
+      case "cliente": return "#1e40af";
+      case "prestador": return "#16a34a";
+      case "vidracaria": return "#d97706";
       default: return "#6b7280";
     }
   };
@@ -89,13 +141,12 @@ const AdminMapa = () => {
     }
   };
 
-  // Brazil regions for coverage visualization
   const regions = [
-    { name: "Sudeste", coverage: 85, color: "bg-success" },
-    { name: "Sul", coverage: 72, color: "bg-success" },
-    { name: "Nordeste", coverage: 45, color: "bg-warning" },
-    { name: "Centro-Oeste", coverage: 38, color: "bg-warning" },
-    { name: "Norte", coverage: 15, color: "bg-destructive" },
+    { name: "Sudeste", coverage: 0, color: "bg-muted" },
+    { name: "Sul", coverage: 0, color: "bg-muted" },
+    { name: "Nordeste", coverage: 0, color: "bg-muted" },
+    { name: "Centro-Oeste", coverage: 0, color: "bg-muted" },
+    { name: "Norte", coverage: 0, color: "bg-muted" },
   ];
 
   // Initialize Mapbox map
@@ -107,7 +158,7 @@ const AdminMapa = () => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [-47.9, -15.8], // Center of Brazil
+      center: [-47.9, -15.8],
       zoom: 3.5,
     });
 
@@ -125,11 +176,9 @@ const AdminMapa = () => {
   useEffect(() => {
     if (!map.current) return;
 
-    // Remove existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // Add new markers
     filteredMarkers.forEach((markerData) => {
       const el = document.createElement('div');
       el.className = 'mapbox-marker';
@@ -150,7 +199,7 @@ const AdminMapa = () => {
         <div style="padding: 8px; font-family: system-ui, sans-serif;">
           <strong style="font-size: 14px;">${markerData.name}</strong>
           <p style="margin: 4px 0 0; color: #666; font-size: 12px;">${markerData.location}</p>
-          ${'qualifications' in markerData ? `<p style="margin: 4px 0 0; color: #16a34a; font-size: 11px;">${markerData.qualifications} qualificações</p>` : ''}
+          ${markerData.qualifications ? `<p style="margin: 4px 0 0; color: #16a34a; font-size: 11px;">${markerData.qualifications} qualificações</p>` : ''}
         </div>
       `);
 
@@ -297,7 +346,7 @@ const AdminMapa = () => {
                   <span className="text-sm text-foreground">{region.name}</span>
                   <span className={`text-sm font-medium ${
                     region.coverage >= 70 ? 'text-success' :
-                    region.coverage >= 30 ? 'text-warning' : 'text-destructive'
+                    region.coverage >= 30 ? 'text-warning' : 'text-muted-foreground'
                   }`}>
                     {region.coverage}%
                   </span>
@@ -360,7 +409,7 @@ const AdminMapa = () => {
                       {marker.location}
                     </div>
                   </div>
-                  {"qualifications" in marker && (
+                  {marker.qualifications && (
                     <span className="text-xs bg-success/10 text-success px-2 py-1 rounded-full">
                       {marker.qualifications} qualif.
                     </span>
@@ -369,27 +418,12 @@ const AdminMapa = () => {
               );
             })}
           </div>
-        </motion.div>
-
-        {/* Alert for sparse regions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-6"
-        >
-          <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4">
-            <h3 className="font-semibold text-destructive mb-2">Regiões com Baixa Cobertura</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              Estas regiões precisam de mais prestadores para garantir atendimento completo:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs bg-white px-3 py-1 rounded-full text-foreground">Manaus, AM</span>
-              <span className="text-xs bg-white px-3 py-1 rounded-full text-foreground">Belém, PA</span>
-              <span className="text-xs bg-white px-3 py-1 rounded-full text-foreground">Palmas, TO</span>
-              <span className="text-xs bg-white px-3 py-1 rounded-full text-foreground">Rio Branco, AC</span>
+          
+          {filteredMarkers.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhum registro encontrado com coordenadas
             </div>
-          </div>
+          )}
         </motion.div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -24,29 +24,122 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface Cliente {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  cpf: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  status: string;
+  dataIndicacao: string;
+  servicoIndicado: string;
+  valorServico: string;
+  comissaoGerada: string;
+  observacoes: string;
+}
 
 const Clientes = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
-  const [clientes, setClientes] = useState([
-    { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", email: "ana.paula@email.com", cpf: "123.456.789-00", endereco: "Rua das Flores, 123", cidade: "São Paulo", estado: "SP", cep: "01234-567", status: "ativo", dataIndicacao: "10/01/2026", servicoIndicado: "Manutenção Box", valorServico: "R$ 200,00", comissaoGerada: "R$ 10,00", observacoes: "" },
-    { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", email: "roberto@email.com", cpf: "234.567.890-11", endereco: "Av. Brasil, 456", cidade: "São Paulo", estado: "SP", cep: "02345-678", status: "ativo", dataIndicacao: "08/01/2026", servicoIndicado: "Instalação Película", valorServico: "R$ 350,00", comissaoGerada: "R$ 17,50", observacoes: "" },
-    { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", email: "maria.jose@email.com", cpf: "345.678.901-22", endereco: "Rua Augusta, 789", cidade: "São Paulo", estado: "SP", cep: "03456-789", status: "pendente", dataIndicacao: "05/01/2026", servicoIndicado: "Troca de Roldanas", valorServico: "R$ 150,00", comissaoGerada: "R$ 0,00", observacoes: "Aguardando conclusão do serviço" },
-    { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", email: "fernando@email.com", cpf: "456.789.012-33", endereco: "Rua Oscar Freire, 321", cidade: "São Paulo", estado: "SP", cep: "04567-890", status: "ativo", dataIndicacao: "03/01/2026", servicoIndicado: "Manutenção Preventiva", valorServico: "R$ 180,00", comissaoGerada: "R$ 9,00", observacoes: "" },
-    { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", email: "carla@email.com", cpf: "567.890.123-44", endereco: "Av. Paulista, 654", cidade: "São Paulo", estado: "SP", cep: "05678-901", status: "inativo", dataIndicacao: "01/01/2026", servicoIndicado: "Instalação Box", valorServico: "R$ 0,00", comissaoGerada: "R$ 0,00", observacoes: "Cliente cancelou o serviço" },
-    { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", email: "jose.oliveira@email.com", cpf: "678.901.234-55", endereco: "Rua Consolação, 987", cidade: "São Paulo", estado: "SP", cep: "06789-012", status: "pendente", dataIndicacao: "28/12/2025", servicoIndicado: "Reparo Porta Blindex", valorServico: "R$ 280,00", comissaoGerada: "R$ 0,00", observacoes: "" },
-  ]);
+  useEffect(() => {
+    const carregarClientes = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar vidraçaria pelo user_id
+      const { data: vidracaria } = await supabase
+        .from('vidracarias')
+        .select('id, comissao_percentual')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!vidracaria) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar ordens indicadas pela vidraçaria
+      const { data: ordens } = await supabase
+        .from('ordens_servico')
+        .select(`
+          *,
+          cliente:clientes(*)
+        `)
+        .eq('vidracaria_id', vidracaria.id)
+        .order('created_at', { ascending: false });
+
+      if (!ordens) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Verificar tipos de serviço
+      const { data: manutencoes } = await supabase
+        .from('processo_manutencao')
+        .select('ordem_id')
+        .in('ordem_id', ordens.map(o => o.id));
+
+      const manutencaoIds = new Set(manutencoes?.map(m => m.ordem_id) || []);
+
+      const comissaoPercentual = Number(vidracaria.comissao_percentual) || 10;
+
+      const clientesData: Cliente[] = ordens
+        .filter(o => o.cliente)
+        .map(ordem => {
+          const valorServico = Number(ordem.valor_total || 0);
+          const comissao = ordem.status === 'concluido' 
+            ? valorServico * (comissaoPercentual / 100) 
+            : 0;
+          const isManutencao = manutencaoIds.has(ordem.id);
+
+          return {
+            id: ordem.id,
+            nome: ordem.cliente.nome,
+            telefone: ordem.cliente.telefone || '',
+            email: ordem.cliente.email || '',
+            cpf: ordem.cliente.documento || '',
+            endereco: ordem.cliente.endereco || '',
+            cidade: ordem.cliente.cidade || '',
+            estado: ordem.cliente.estado || '',
+            cep: ordem.cliente.cep || '',
+            status: ordem.status === 'concluido' ? 'ativo' : ordem.status === 'pendente' ? 'pendente' : 'inativo',
+            dataIndicacao: format(new Date(ordem.created_at), "dd/MM/yyyy", { locale: ptBR }),
+            servicoIndicado: isManutencao ? "Manutenção Box" : "Aplicação de Película",
+            valorServico: `R$ ${valorServico.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            comissaoGerada: `R$ ${comissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+            observacoes: ordem.observacoes || ''
+          };
+        });
+
+      setClientes(clientesData);
+      setIsLoading(false);
+    };
+
+    carregarClientes();
+  }, []);
 
   const handleDelete = (id: string, nome: string) => {
     setClientes(prev => prev.filter(c => c.id !== id));
     toast.success(`Cliente "${nome}" removido com sucesso`);
   };
 
-  const [editingCliente, setEditingCliente] = useState<typeof clientes[0] | null>(null);
-
-  const handleEdit = (cliente: typeof clientes[0]) => {
+  const handleEdit = (cliente: Cliente) => {
     setEditingCliente(cliente);
   };
 
@@ -189,63 +282,71 @@ const Clientes = () => {
         </motion.div>
 
         {/* Lista de Clientes */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-3"
-        >
-          {filteredClientes.map((cliente, index) => (
-            <motion.div
-              key={cliente.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="p-4 rounded-xl bg-card border border-border"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{cliente.nome}</p>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    <span>{cliente.telefone}</span>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-3"
+          >
+            {filteredClientes.map((cliente, index) => (
+              <motion.div
+                key={cliente.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-4 rounded-xl bg-card border border-border"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Indicado em {cliente.dataIndicacao}
-                  </p>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">{cliente.nome}</p>
+                    {cliente.telefone && (
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Phone className="w-3 h-3" />
+                        <span>{cliente.telefone}</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Indicado em {cliente.dataIndicacao}
+                    </p>
+                  </div>
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
+                    {getStatusIcon(cliente.status)}
+                    {getStatusLabel(cliente.status)}
+                  </div>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
-                  {getStatusIcon(cliente.status)}
-                  {getStatusLabel(cliente.status)}
+                <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 gap-1"
+                    onClick={() => handleEdit(cliente)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1 gap-1"
+                    onClick={() => handleDelete(cliente.id, cliente.nome)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Deletar
+                  </Button>
                 </div>
-              </div>
-              <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 gap-1"
-                  onClick={() => handleEdit(cliente)}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-1 gap-1"
-                  onClick={() => handleDelete(cliente.id, cliente.nome)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Deletar
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
-        {filteredClientes.length === 0 && (
+        {!isLoading && filteredClientes.length === 0 && (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Nenhum cliente encontrado</p>
@@ -253,7 +354,7 @@ const Clientes = () => {
         )}
       </div>
 
-      {/* Modal de Edição Completo */}
+      {/* Modal de Edição */}
       {editingCliente && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
@@ -373,28 +474,28 @@ const Clientes = () => {
                       <Label>Data da Indicação</Label>
                       <Input
                         value={editingCliente.dataIndicacao}
-                        onChange={(e) => setEditingCliente({ ...editingCliente, dataIndicacao: e.target.value })}
+                        disabled
                       />
                     </div>
                     <div>
                       <Label>Serviço Indicado</Label>
                       <Input
                         value={editingCliente.servicoIndicado}
-                        onChange={(e) => setEditingCliente({ ...editingCliente, servicoIndicado: e.target.value })}
+                        disabled
                       />
                     </div>
                     <div>
                       <Label>Valor do Serviço</Label>
                       <Input
                         value={editingCliente.valorServico}
-                        onChange={(e) => setEditingCliente({ ...editingCliente, valorServico: e.target.value })}
+                        disabled
                       />
                     </div>
                     <div>
                       <Label>Comissão Gerada</Label>
                       <Input
                         value={editingCliente.comissaoGerada}
-                        onChange={(e) => setEditingCliente({ ...editingCliente, comissaoGerada: e.target.value })}
+                        disabled
                       />
                     </div>
                     <div className="col-span-2">
@@ -409,12 +510,12 @@ const Clientes = () => {
                 </div>
               </div>
             </ScrollArea>
-            <div className="flex gap-2 p-6 border-t border-border">
+            <div className="flex gap-3 p-6 border-t border-border">
               <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>
                 Cancelar
               </Button>
               <Button className="flex-1" onClick={handleSaveEdit}>
-                Salvar
+                Salvar Alterações
               </Button>
             </div>
           </motion.div>

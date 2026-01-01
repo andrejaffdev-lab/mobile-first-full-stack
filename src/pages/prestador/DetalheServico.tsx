@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -11,33 +12,117 @@ import {
   XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface ServicoData {
+  id: string;
+  cliente: string;
+  telefone: string;
+  endereco: string;
+  cidade: string;
+  cep: string;
+  servico: string;
+  detalhes: string;
+  valor: string;
+  comissao: string;
+  distancia: string;
+  tempoEstimado: string;
+  dataAgendada: string;
+  itensInclusos: string[];
+}
 
 const DetalheServicoPrestador = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [servico, setServico] = useState<ServicoData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const servico = {
-    id: id || "1",
-    cliente: "Maria Santos",
-    telefone: "(11) 99999-8888",
-    endereco: "Rua das Flores, 123 - Centro",
-    cidade: "São Paulo - SP",
-    cep: "01310-100",
-    servico: "Manutenção Preventiva",
-    detalhes: "Box de vidro temperado - 2 folhas",
-    valor: "R$ 200,00",
-    comissao: "R$ 160,00",
-    distancia: "2.5 km",
-    tempoEstimado: "45 min",
-    dataAgendada: "15/01/2026 - 14:00",
-    itensInclusos: [
-      "Revisão completa do box",
-      "Troca de roldanas",
-      "Ajuste de fixações",
-      "Limpeza do trilho",
-      "Verificação de vedação",
-    ],
-  };
+  useEffect(() => {
+    const carregarServico = async () => {
+      if (!id) return;
+
+      const { data: ordem, error } = await supabase
+        .from('ordens_servico')
+        .select(`
+          *,
+          cliente:clientes(*)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error || !ordem) {
+        console.error('Erro ao carregar ordem:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      // Verificar tipo de serviço
+      const { data: manutencao } = await supabase
+        .from('processo_manutencao')
+        .select('*')
+        .eq('ordem_id', id)
+        .single();
+
+      const isManutencao = !!manutencao;
+      const valorTotal = Number(ordem.valor_total || 0);
+      const comissao = valorTotal * 0.8; // 80% para o prestador
+
+      const formatEndereco = () => {
+        if (!ordem.cliente) return '';
+        const c = ordem.cliente;
+        return `${c.endereco || ''}, ${c.numero || ''} - ${c.bairro || ''}`;
+      };
+
+      const formatCidade = () => {
+        if (!ordem.cliente) return '';
+        const c = ordem.cliente;
+        return `${c.cidade || ''} - ${c.estado || ''}`;
+      };
+
+      const getItensInclusos = () => {
+        if (isManutencao) {
+          return [
+            "Revisão completa do box",
+            "Troca de roldanas",
+            "Ajuste de fixações",
+            "Limpeza do trilho",
+            "Verificação de vedação",
+          ];
+        }
+        return [
+          "Aplicação de película",
+          "Limpeza do vidro",
+          "Verificação de condições",
+          "Remontagem completa",
+        ];
+      };
+
+      setServico({
+        id: ordem.id,
+        cliente: ordem.cliente?.nome || 'Cliente',
+        telefone: ordem.cliente?.telefone || ordem.cliente?.whatsapp || '',
+        endereco: formatEndereco(),
+        cidade: formatCidade(),
+        cep: ordem.cliente?.cep || '',
+        servico: isManutencao ? "Manutenção Preventiva" : "Aplicação de Película",
+        detalhes: isManutencao ? "Box de vidro temperado" : "Película protetora",
+        valor: `R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        comissao: `R$ ${comissao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        distancia: "-",
+        tempoEstimado: "45 min",
+        dataAgendada: ordem.data_agendamento 
+          ? format(new Date(ordem.data_agendamento), "dd/MM/yyyy", { locale: ptBR })
+          : "A definir",
+        itensInclusos: getItensInclusos(),
+      });
+
+      setIsLoading(false);
+    };
+
+    carregarServico();
+  }, [id]);
 
   const handleAceitar = () => {
     navigate(`/prestador/tarefas/${id}`);
@@ -48,9 +133,26 @@ const DetalheServicoPrestador = () => {
   };
 
   const handleAbrirMapa = () => {
+    if (!servico) return;
     const endereco = encodeURIComponent(`${servico.endereco}, ${servico.cidade}`);
     window.open(`https://www.google.com/maps/search/?api=1&query=${endereco}`, "_blank");
   };
+
+  if (isLoading) {
+    return (
+      <div className="mobile-container min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!servico) {
+    return (
+      <div className="mobile-container min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Serviço não encontrado</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-32">
@@ -82,21 +184,25 @@ const DetalheServicoPrestador = () => {
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-semibold text-foreground">{servico.cliente}</h2>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">{servico.telefone}</span>
-              </div>
+              {servico.telefone && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="w-4 h-4" />
+                  <span className="text-sm">{servico.telefone}</span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-foreground">{servico.endereco}</p>
-                <p className="text-sm text-muted-foreground">{servico.cidade} - {servico.cep}</p>
+            {servico.endereco && (
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-foreground">{servico.endereco}</p>
+                  <p className="text-sm text-muted-foreground">{servico.cidade} - {servico.cep}</p>
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-muted-foreground" />
               <p className="text-foreground">{servico.dataAgendada}</p>
@@ -109,7 +215,7 @@ const DetalheServicoPrestador = () => {
             onClick={handleAbrirMapa}
           >
             <Navigation className="w-4 h-4" />
-            Abrir no Mapa ({servico.distancia})
+            Abrir no Mapa
           </Button>
         </motion.div>
 
