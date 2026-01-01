@@ -143,9 +143,9 @@ const AdminClientes = () => {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-8">
+    <div className="mobile-container h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -163,7 +163,8 @@ const AdminClientes = () => {
         </div>
       </header>
 
-      <div className="px-6 py-6 space-y-6">
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-6 space-y-6">
         {/* Busca */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -265,7 +266,8 @@ const AdminClientes = () => {
             <p className="text-muted-foreground">Nenhum cliente encontrado</p>
           </div>
         )}
-      </div>
+        </div>
+      </ScrollArea>
 
       {/* Modal de Edição */}
       {editingCliente && (

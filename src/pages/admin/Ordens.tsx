@@ -15,6 +15,7 @@ import {
   User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -150,8 +151,8 @@ const Ordens = () => {
   const qtdPendente = ordens.filter((o) => (o.status ?? "pendente") === "pendente").length;
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-8">
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3">
+    <div className="mobile-container h-screen bg-background flex flex-col overflow-hidden">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -169,7 +170,8 @@ const Ordens = () => {
         </div>
       </header>
 
-      <div className="px-6 py-6 space-y-6">
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-6 space-y-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
@@ -294,7 +296,8 @@ const Ordens = () => {
             )}
           </motion.div>
         )}
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 };
