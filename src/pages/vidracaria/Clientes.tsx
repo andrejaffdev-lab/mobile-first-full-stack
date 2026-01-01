@@ -8,8 +8,13 @@ import {
   Phone, 
   CheckCircle2,
   Clock,
-  XCircle
+  XCircle,
+  Plus,
+  Pencil,
+  Trash2
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
 const Clientes = () => {
@@ -17,14 +22,23 @@ const Clientes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
 
-  const clientes = [
+  const [clientes, setClientes] = useState([
     { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", status: "ativo", dataIndicacao: "10/01/2026" },
     { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", status: "ativo", dataIndicacao: "08/01/2026" },
     { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", status: "pendente", dataIndicacao: "05/01/2026" },
     { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", status: "ativo", dataIndicacao: "03/01/2026" },
     { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", status: "inativo", dataIndicacao: "01/01/2026" },
     { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", status: "pendente", dataIndicacao: "28/12/2025" },
-  ];
+  ]);
+
+  const handleDelete = (id: string, nome: string) => {
+    setClientes(prev => prev.filter(c => c.id !== id));
+    toast.success(`Cliente "${nome}" removido com sucesso`);
+  };
+
+  const handleEdit = (id: string) => {
+    toast.info("Função de edição será implementada em breve");
+  };
 
   const filtros = [
     { key: "todos", label: "Todos" },
@@ -78,20 +92,40 @@ const Clientes = () => {
     <div className="mobile-container min-h-screen bg-background pb-8">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-lg font-semibold text-foreground font-display">
+              Clientes Indicados
+            </h1>
+          </div>
+          <Button 
+            onClick={() => navigate("/vidracaria/cadastrar-cliente")}
+            size="sm"
+            className="gap-1"
           >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold text-foreground font-display">
-            Clientes Indicados
-          </h1>
+            <Plus className="w-4 h-4" />
+            Novo
+          </Button>
         </div>
       </header>
 
       <div className="px-6 py-6 space-y-6">
+        {/* Busca */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            placeholder="Buscar cliente..."
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-background text-foreground"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         {/* Busca */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -158,24 +192,46 @@ const Clientes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+              className="p-4 rounded-xl bg-card border border-border"
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">{cliente.nome}</p>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Phone className="w-3 h-3" />
-                  <span>{cliente.telefone}</span>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Indicado em {cliente.dataIndicacao}
-                </p>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{cliente.nome}</p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Phone className="w-3 h-3" />
+                    <span>{cliente.telefone}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Indicado em {cliente.dataIndicacao}
+                  </p>
+                </div>
+                <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
+                  {getStatusIcon(cliente.status)}
+                  {getStatusLabel(cliente.status)}
+                </div>
               </div>
-              <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
-                {getStatusIcon(cliente.status)}
-                {getStatusLabel(cliente.status)}
+              <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 gap-1"
+                  onClick={() => handleEdit(cliente.id)}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 gap-1"
+                  onClick={() => handleDelete(cliente.id, cliente.nome)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Deletar
+                </Button>
               </div>
             </motion.div>
           ))}
