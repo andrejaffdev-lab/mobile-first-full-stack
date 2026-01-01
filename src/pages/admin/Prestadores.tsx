@@ -411,17 +411,9 @@ const Prestadores = () => {
                       <Label>Chave PIX</Label>
                       <Input value={editingPrestador.pix_chave || ""} onChange={(e) => setEditingPrestador({ ...editingPrestador, pix_chave: e.target.value })} />
                     </div>
-                    <div>
-                      <Label>Banco</Label>
-                      <Input value={editingPrestador.banco_nome || ""} onChange={(e) => setEditingPrestador({ ...editingPrestador, banco_nome: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Agência</Label>
-                      <Input value={editingPrestador.banco_agencia || ""} onChange={(e) => setEditingPrestador({ ...editingPrestador, banco_agencia: e.target.value })} />
-                    </div>
                     <div className="col-span-2">
-                      <Label>Conta</Label>
-                      <Input value={editingPrestador.banco_conta || ""} onChange={(e) => setEditingPrestador({ ...editingPrestador, banco_conta: e.target.value })} />
+                      <Label>Banco que recebe</Label>
+                      <Input value={editingPrestador.banco_nome || ""} onChange={(e) => setEditingPrestador({ ...editingPrestador, banco_nome: e.target.value })} />
                     </div>
                   </div>
                 </div>

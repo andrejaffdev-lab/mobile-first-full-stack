@@ -388,17 +388,9 @@ const Vidracarias = () => {
                       <Label>Chave PIX</Label>
                       <Input value={editingVidracaria.pix_chave || ""} onChange={(e) => setEditingVidracaria({ ...editingVidracaria, pix_chave: e.target.value })} />
                     </div>
-                    <div>
-                      <Label>Banco</Label>
-                      <Input value={editingVidracaria.banco_nome || ""} onChange={(e) => setEditingVidracaria({ ...editingVidracaria, banco_nome: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Agência</Label>
-                      <Input value={editingVidracaria.banco_agencia || ""} onChange={(e) => setEditingVidracaria({ ...editingVidracaria, banco_agencia: e.target.value })} />
-                    </div>
                     <div className="col-span-2">
-                      <Label>Conta</Label>
-                      <Input value={editingVidracaria.banco_conta || ""} onChange={(e) => setEditingVidracaria({ ...editingVidracaria, banco_conta: e.target.value })} />
+                      <Label>Banco que recebe</Label>
+                      <Input value={editingVidracaria.banco_nome || ""} onChange={(e) => setEditingVidracaria({ ...editingVidracaria, banco_nome: e.target.value })} />
                     </div>
                   </div>
                 </div>

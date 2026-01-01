@@ -76,6 +76,10 @@ const Register = () => {
   const [cidadeVidracaria, setCidadeVidracaria] = useState("");
   const [estadoVidracaria, setEstadoVidracaria] = useState("");
 
+  // Campos Bancários (prestador e vidraçaria)
+  const [pixChave, setPixChave] = useState("");
+  const [bancoNome, setBancoNome] = useState("");
+
   const uploadFiles = async (files: File[], bucket: string, folder: string): Promise<string[]> => {
     const urls: string[] = [];
     for (const file of files) {
@@ -165,6 +169,8 @@ const Register = () => {
           qualificacoes: selectedQualificacoes,
           fotos_obras: fotosUrls,
           cnh_urls: cnhUrls,
+          pix_chave: pixChave,
+          banco_nome: bancoNome,
           status: "pendente"
         });
         if (error) throw error;
@@ -185,6 +191,8 @@ const Register = () => {
           bairro: bairroVidracaria,
           cidade: cidadeVidracaria,
           estado: estadoVidracaria,
+          pix_chave: pixChave,
+          banco_nome: bancoNome,
           status: "pendente"
         });
         if (error) throw error;
@@ -720,6 +728,31 @@ const Register = () => {
                         required
                       />
                     </div>
+
+                    {/* Dados Bancários para recebimento */}
+                    <div className="border-t border-white/20 pt-4 mt-4">
+                      <p className="text-sm font-medium text-white/90 mb-3">Dados Bancários para Recebimento</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Chave PIX</label>
+                      <Input
+                        type="text"
+                        placeholder="CPF, CNPJ, e-mail ou telefone"
+                        value={pixChave}
+                        onChange={(e) => setPixChave(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Banco que recebe</label>
+                      <Input
+                        type="text"
+                        placeholder="Nome do banco"
+                        value={bancoNome}
+                        onChange={(e) => setBancoNome(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                      />
+                    </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-white/90">Senha</label>
                       <div className="relative">
@@ -1129,6 +1162,31 @@ const Register = () => {
                           </span>
                         </div>
                       )}
+                    </div>
+
+                    {/* Dados Bancários para recebimento */}
+                    <div className="border-t border-white/20 pt-4 mt-4">
+                      <p className="text-sm font-medium text-white/90 mb-3">Dados Bancários para Recebimento</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Chave PIX</label>
+                      <Input
+                        type="text"
+                        placeholder="CPF, CNPJ, e-mail ou telefone"
+                        value={pixChave}
+                        onChange={(e) => setPixChave(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-white/90">Banco que recebe</label>
+                      <Input
+                        type="text"
+                        placeholder="Nome do banco"
+                        value={bancoNome}
+                        onChange={(e) => setBancoNome(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
+                      />
                     </div>
 
                     <div className="bg-white/10 rounded-lg p-4 mt-4">
