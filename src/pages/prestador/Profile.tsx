@@ -12,18 +12,73 @@ import {
   LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface PrestadorData {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  documento: string;
+  nota_media: number | null;
+  total_servicos: number | null;
+  created_at: string;
+}
 
 const ProfilePrestador = () => {
   const navigate = useNavigate();
+  const [prestador, setPrestador] = useState<PrestadorData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const prestador = {
-    nome: "Pedro Montador",
-    email: "pedro@email.com",
-    telefone: "(11) 99999-7777",
-    documento: "123.456.789-00",
-    avaliacao: "4.9",
-    servicosRealizados: 127,
-    membroDesde: "Março 2024",
+  useEffect(() => {
+    const fetchPrestador = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('prestadores_servico')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Erro ao buscar prestador:', error);
+        } else {
+          setPrestador(data);
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrestador();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatDocument = (doc: string) => {
+    if (doc.length === 11) {
+      return doc.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    }
+    return doc;
   };
 
   const menuItems = [
@@ -62,20 +117,20 @@ const ProfilePrestador = () => {
             <User className="w-10 h-10 text-primary" />
           </div>
           <h2 className="text-xl font-bold text-foreground font-display">
-            {prestador.nome}
+            {loading ? 'Carregando...' : (prestador?.nome || 'Prestador')}
           </h2>
-          <p className="text-muted-foreground">{prestador.email}</p>
+          <p className="text-muted-foreground">{prestador?.email || ''}</p>
           
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-border">
             <div>
               <div className="flex items-center justify-center gap-1 text-warning">
                 <Star className="w-4 h-4 fill-current" />
-                <span className="font-bold">{prestador.avaliacao}</span>
+                <span className="font-bold">{prestador?.nota_media?.toFixed(1) || '0.0'}</span>
               </div>
               <p className="text-xs text-muted-foreground">Avaliação</p>
             </div>
             <div>
-              <p className="font-bold text-foreground">{prestador.servicosRealizados}</p>
+              <p className="font-bold text-foreground">{prestador?.total_servicos || 0}</p>
               <p className="text-xs text-muted-foreground">Serviços</p>
             </div>
             <div>
@@ -96,15 +151,19 @@ const ProfilePrestador = () => {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Telefone</span>
-              <span className="text-foreground">{prestador.telefone}</span>
+              <span className="text-foreground">{prestador?.telefone || 'Não informado'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">CPF</span>
-              <span className="text-foreground">{prestador.documento}</span>
+              <span className="text-foreground">
+                {prestador?.documento ? formatDocument(prestador.documento) : 'Não informado'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Membro desde</span>
-              <span className="text-foreground">{prestador.membroDesde}</span>
+              <span className="text-foreground">
+                {prestador?.created_at ? formatDate(prestador.created_at) : 'Não informado'}
+              </span>
             </div>
           </div>
           <Button variant="outline" className="w-full mt-4">
@@ -148,7 +207,7 @@ const ProfilePrestador = () => {
           <Button 
             variant="outline" 
             className="w-full border-destructive text-destructive hover:bg-destructive/10"
-            onClick={() => navigate("/login")}
+            onClick={handleLogout}
           >
             <LogOut className="w-5 h-5" />
             Sair da Conta
