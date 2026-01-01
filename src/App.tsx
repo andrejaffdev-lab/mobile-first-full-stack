@@ -32,6 +32,8 @@ import Clientes from "./pages/vidracaria/Clientes";
 import Comissoes from "./pages/vidracaria/Comissoes";
 import ProfileVidracaria from "./pages/vidracaria/Profile";
 import AdminDashboard from "./pages/admin/Dashboard";
+import AdminFinanceiro from "./pages/admin/Financeiro";
+import AdminMapa from "./pages/admin/Mapa";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +85,8 @@ const App = () => (
           
           {/* Admin */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/admin/financeiro" element={<AdminFinanceiro />} />
+          <Route path="/admin/mapa" element={<AdminMapa />} />
           <Route path="/admin" element={<Navigate to="/dashboard/admin" replace />} />
           
           {/* 404 */}

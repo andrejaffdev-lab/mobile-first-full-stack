@@ -1,17 +1,53 @@
 import { motion } from "framer-motion";
-import { Users, Wrench, Building2, Map, TrendingUp, DollarSign } from "lucide-react";
+import { Users, Wrench, Building2, Map, TrendingUp, DollarSign, UserCheck, Clock, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const stats = [
-    { label: "Clientes", value: "30", icon: Users, color: "bg-primary/10 text-primary" },
-    { label: "Prestadores", value: "22", icon: Wrench, color: "bg-success/10 text-success" },
-    { label: "Vidraçarias", value: "5", icon: Building2, color: "bg-warning/10 text-warning" },
+    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary" },
+    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success" },
+    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning" },
+    { label: "Total Usuários", value: "216", icon: UserCheck, color: "bg-accent/10 text-accent" },
   ];
 
-  const montadores = [
-    { name: "João Souza", distance: "0.75 km" },
-    { name: "Marcelo Lima", distance: "0.59 km" },
-    { name: "Roberto Silva", distance: "1.2 km" },
+  const monthlyData = [
+    { month: "Jan", receita: 45000, despesas: 28000 },
+    { month: "Fev", receita: 52000, despesas: 31000 },
+    { month: "Mar", receita: 48000, despesas: 29000 },
+    { month: "Abr", receita: 61000, despesas: 35000 },
+    { month: "Mai", receita: 55000, despesas: 32000 },
+    { month: "Jun", receita: 67000, despesas: 38000 },
+    { month: "Jul", receita: 72000, despesas: 41000 },
+    { month: "Ago", receita: 69000, despesas: 39000 },
+    { month: "Set", receita: 78000, despesas: 44000 },
+    { month: "Out", receita: 82000, despesas: 46000 },
+    { month: "Nov", receita: 91000, despesas: 52000 },
+    { month: "Dez", receita: 98000, despesas: 55000 },
+  ];
+
+  const yearlyData = [
+    { year: "2019", receita: 420000, lucro: 168000 },
+    { year: "2020", receita: 380000, lucro: 140000 },
+    { year: "2021", receita: 520000, lucro: 210000 },
+    { year: "2022", receita: 680000, lucro: 285000 },
+    { year: "2023", receita: 820000, lucro: 355000 },
+    { year: "2024", receita: 918000, lucro: 412000 },
+  ];
+
+  const recentUsers = [
+    { name: "Maria Silva", type: "Cliente", date: "Hoje, 14:30", status: "Ativo" },
+    { name: "João Montador", type: "Prestador", date: "Hoje, 11:20", status: "Pendente" },
+    { name: "Vidraçaria Central", type: "Vidraçaria", date: "Ontem, 16:45", status: "Ativo" },
+    { name: "Carlos Oliveira", type: "Prestador", date: "Ontem, 09:15", status: "Pendente" },
+  ];
+
+  const pendingApprovals = [
+    { name: "Ricardo Santos", type: "Prestador", qualifications: 5, location: "São Paulo, SP" },
+    { name: "Pedro Almeida", type: "Prestador", qualifications: 3, location: "Rio de Janeiro, RJ" },
+    { name: "Glass Premium", type: "Vidraçaria", qualifications: 0, location: "Belo Horizonte, MG" },
   ];
 
   return (
@@ -23,7 +59,7 @@ const AdminDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-2xl font-bold text-white font-display">
-            Painel do Administrador
+            Painel Administrativo
           </h1>
           <p className="text-white/70 mt-1">Gestão completa do sistema</p>
         </motion.div>
@@ -35,14 +71,14 @@ const AdminDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-3"
+          className="grid grid-cols-2 gap-3"
         >
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl p-4 shadow-card text-center"
+              className="bg-white rounded-xl p-4 shadow-card"
             >
-              <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mx-auto mb-2`}>
+              <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
                 <stat.icon className="w-5 h-5" />
               </div>
               <p className="text-2xl font-bold text-foreground font-display">
@@ -53,36 +89,79 @@ const AdminDashboard = () => {
           ))}
         </motion.div>
 
-        {/* Mapa Placeholder */}
+        {/* Quick Navigation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="mt-6 grid grid-cols-2 gap-4"
+        >
+          <button 
+            onClick={() => navigate('/admin/financeiro')}
+            className="premium-card flex items-center gap-3 text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-success" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Financeiro</p>
+              <p className="text-xs text-muted-foreground">Dashboard completo</p>
+            </div>
+          </button>
+          <button 
+            onClick={() => navigate('/admin/mapa')}
+            className="premium-card flex items-center gap-3 text-left"
+          >
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Map className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Mapa</p>
+              <p className="text-xs text-muted-foreground">Ver cobertura</p>
+            </div>
+          </button>
+        </motion.div>
+
+        {/* Pending Approvals */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
           className="mt-6"
         >
-          <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl h-48 flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20">
-              <svg viewBox="0 0 400 200" className="w-full h-full">
-                <path
-                  d="M50,100 Q100,50 150,100 T250,100 T350,100"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className="text-primary"
-                />
-                <circle cx="100" cy="80" r="8" className="fill-primary" />
-                <circle cx="200" cy="120" r="8" className="fill-accent" />
-                <circle cx="300" cy="90" r="8" className="fill-success" />
-              </svg>
-            </div>
-            <div className="relative z-10 text-center">
-              <Map className="w-12 h-12 text-primary mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Mapa de Cobertura</p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground font-display">
+              Aguardando Aprovação
+            </h2>
+            <span className="bg-warning/10 text-warning px-2 py-1 rounded-full text-xs font-medium">
+              {pendingApprovals.length} pendentes
+            </span>
+          </div>
+          <div className="space-y-3">
+            {pendingApprovals.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+              >
+                <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-warning" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{item.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.type} • {item.location}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 
-        {/* Montadores Próximos */}
+        {/* Balance Chart - Last 12 Months */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -90,45 +169,130 @@ const AdminDashboard = () => {
           className="mt-6"
         >
           <h2 className="text-lg font-semibold text-foreground font-display mb-4">
-            Montadores Próximos
+            Balanço - Últimos 12 Meses
           </h2>
-          <div className="space-y-3">
-            {montadores.map((montador, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <span className="flex-1 font-medium text-foreground">
-                  {montador.name}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {montador.distance}
-                </span>
-              </motion.div>
-            ))}
+          <div className="bg-white rounded-2xl p-4 shadow-card">
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={monthlyData}>
+                <defs>
+                  <linearGradient id="colorReceita" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(213, 90%, 35%)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(213, 90%, 35%)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="hsl(215, 20%, 50%)" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(215, 20%, 50%)" tickFormatter={(v) => `${v/1000}k`} />
+                <Tooltip 
+                  formatter={(value: number) => [`R$ ${value.toLocaleString()}`, '']}
+                  contentStyle={{ 
+                    background: 'white', 
+                    border: '1px solid hsl(214, 32%, 91%)',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+                <Area type="monotone" dataKey="receita" stroke="hsl(213, 90%, 35%)" fill="url(#colorReceita)" name="Receita" />
+                <Area type="monotone" dataKey="despesas" stroke="hsl(0, 84%, 60%)" fill="url(#colorDespesas)" name="Despesas" />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div className="flex justify-center gap-6 mt-3">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary"></div>
+                <span className="text-xs text-muted-foreground">Receita</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                <span className="text-xs text-muted-foreground">Despesas</span>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Yearly Balance Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-6"
+        >
+          <h2 className="text-lg font-semibold text-foreground font-display mb-4">
+            Balanço Anual - Últimos 6 Anos
+          </h2>
+          <div className="bg-white rounded-2xl p-4 shadow-card">
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={yearlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 32%, 91%)" />
+                <XAxis dataKey="year" tick={{ fontSize: 10 }} stroke="hsl(215, 20%, 50%)" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(215, 20%, 50%)" tickFormatter={(v) => `${v/1000}k`} />
+                <Tooltip 
+                  formatter={(value: number) => [`R$ ${value.toLocaleString()}`, '']}
+                  contentStyle={{ 
+                    background: 'white', 
+                    border: '1px solid hsl(214, 32%, 91%)',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+                <Bar dataKey="receita" fill="hsl(213, 90%, 35%)" radius={[4, 4, 0, 0]} name="Receita" />
+                <Bar dataKey="lucro" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} name="Lucro" />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="flex justify-center gap-6 mt-3">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-primary"></div>
+                <span className="text-xs text-muted-foreground">Receita</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-success"></div>
+                <span className="text-xs text-muted-foreground">Lucro</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Recent Users */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-6 grid grid-cols-2 gap-4"
+          className="mt-6"
         >
-          <div className="premium-card text-center">
-            <TrendingUp className="w-8 h-8 text-primary mx-auto mb-2" />
-            <p className="font-medium text-foreground">Relatórios</p>
-          </div>
-          <div className="premium-card text-center">
-            <DollarSign className="w-8 h-8 text-success mx-auto mb-2" />
-            <p className="font-medium text-foreground">Financeiro</p>
+          <h2 className="text-lg font-semibold text-foreground font-display mb-4">
+            Cadastros Recentes
+          </h2>
+          <div className="space-y-3">
+            {recentUsers.map((user, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + index * 0.1 }}
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  user.type === 'Cliente' ? 'bg-primary/10' : 
+                  user.type === 'Prestador' ? 'bg-success/10' : 'bg-warning/10'
+                }`}>
+                  {user.type === 'Cliente' ? <Users className="w-5 h-5 text-primary" /> :
+                   user.type === 'Prestador' ? <Wrench className="w-5 h-5 text-success" /> :
+                   <Building2 className="w-5 h-5 text-warning" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.type} • {user.date}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  user.status === 'Ativo' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                }`}>
+                  {user.status}
+                </span>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>
