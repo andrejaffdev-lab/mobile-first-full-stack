@@ -14,6 +14,9 @@ import Pagamento from "./pages/cliente/Pagamento";
 import Servicos from "./pages/cliente/Servicos";
 import DetalheServico from "./pages/cliente/DetalheServico";
 import Garantia from "./pages/cliente/Garantia";
+import Financeiro from "./pages/cliente/Financeiro";
+import Profile from "./pages/cliente/Profile";
+import Chat from "./pages/Chat";
 import PrestadorDashboard from "./pages/prestador/Dashboard";
 import Tarefas from "./pages/prestador/Tarefas";
 import VidracariaDashboard from "./pages/vidracaria/Dashboard";
@@ -44,8 +47,9 @@ const App = () => (
           <Route path="/orders" element={<Servicos />} />
           <Route path="/servico/:id" element={<DetalheServico />} />
           <Route path="/garantia" element={<Garantia />} />
-          <Route path="/chat" element={<ClienteDashboard />} />
-          <Route path="/profile" element={<ClienteDashboard />} />
+          <Route path="/financeiro" element={<Financeiro />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/chat" element={<Chat />} />
           
           {/* Prestador */}
           <Route path="/dashboard/prestador" element={<PrestadorDashboard />} />
