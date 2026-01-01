@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Wrench, Building2, ChevronLeft } from "lucide-react";
+import { User, Wrench, Building2, Shield, ChevronLeft } from "lucide-react";
 import { ProfileCard } from "@/components/ui/ProfileCard";
 
 const profiles = [
@@ -24,6 +24,13 @@ const profiles = [
     title: "Vidraceiro",
     description: "Bons negócios de clientes fiéis",
     route: "/dashboard/vidracaria",
+  },
+  {
+    id: "admin",
+    icon: <Shield className="w-7 h-7" />,
+    title: "Administrador",
+    description: "Gestão completa do sistema",
+    route: "/dashboard/admin",
   },
 ];
 
