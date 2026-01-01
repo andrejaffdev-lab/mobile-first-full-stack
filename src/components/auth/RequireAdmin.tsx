@@ -2,25 +2,23 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const RequireAdmin = () => {
   const location = useLocation();
-  const [state, setState] = useState<"loading" | "allowed" | "unauth" | "denied">("loading");
+  const { user, session, loading: authLoading } = useAuth();
+  const [state, setState] = useState<"loading" | "allowed" | "denied">("loading");
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setState("denied");
+      return;
+    }
+
     let active = true;
 
-    const check = async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
-
-      if (!active) return;
-
-      if (!user) {
-        setState("unauth");
-        return;
-      }
-
+    const checkAdmin = async () => {
       const { data: isAdmin, error } = await supabase.rpc("has_role", {
         _user_id: user.id,
         _role: "admin",
@@ -44,14 +42,14 @@ const RequireAdmin = () => {
       setState("allowed");
     };
 
-    check();
+    checkAdmin();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [user, authLoading]);
 
-  if (state === "loading") {
+  if (authLoading || state === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -59,7 +57,7 @@ const RequireAdmin = () => {
     );
   }
 
-  if (state === "unauth") {
+  if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
