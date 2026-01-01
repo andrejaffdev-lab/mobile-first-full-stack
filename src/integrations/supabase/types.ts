@@ -445,6 +445,39 @@ export type Database = {
         }
         Relationships: []
       }
+      mensagens: {
+        Row: {
+          conteudo: string
+          created_at: string
+          destinatario_id: string | null
+          destinatario_tipo: string | null
+          id: string
+          lida: boolean | null
+          remetente_id: string
+          remetente_tipo: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          destinatario_id?: string | null
+          destinatario_tipo?: string | null
+          id?: string
+          lida?: boolean | null
+          remetente_id: string
+          remetente_tipo: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          destinatario_id?: string | null
+          destinatario_tipo?: string | null
+          id?: string
+          lida?: boolean | null
+          remetente_id?: string
+          remetente_tipo?: string
+        }
+        Relationships: []
+      }
       orcamentos: {
         Row: {
           cliente_id: string | null
