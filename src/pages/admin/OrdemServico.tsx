@@ -246,10 +246,9 @@ const OrdemServico: React.FC = () => {
       pdf.line(pageWidth - 90, yPos, pageWidth - 15, yPos);
       pdf.text("Assinatura do Cliente", pageWidth - 90, yPos + 5);
       
-      // Abrir PDF em nova aba
-      const pdfBlob = pdf.output('blob');
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      window.open(pdfUrl, '_blank');
+      // Download do PDF
+      const nomeCliente = cliente.nome?.replace(/\s+/g, '_') || 'cliente';
+      pdf.save(`Certificado_${nomeCliente}_${new Date().toISOString().slice(0,10)}.pdf`);
       
       toast.success("PDF gerado com sucesso!");
     } catch (error) {
