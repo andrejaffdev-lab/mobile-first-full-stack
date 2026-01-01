@@ -79,6 +79,27 @@
     .modal-header.manutencao { background: linear-gradient(135deg, var(--success-color), #157347); color: white; }
     .modal-header.pelicula { background: linear-gradient(135deg, var(--purple-color), #5a32a3); color: white; }
     .modal-header .btn-close { filter: brightness(0) invert(1); }
+    
+    /* Serviço selecionável */
+    .servico-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; transition: all 0.2s; cursor: pointer; }
+    .servico-item:hover { border-color: var(--primary-color); background: rgba(13, 110, 253, 0.03); }
+    .servico-item.selected { border-color: var(--success-color); background: #d1e7dd; }
+    .servico-item .form-check-input { width: 1.3em; height: 1.3em; margin: 0; cursor: pointer; }
+    .servico-item .servico-info { flex: 1; }
+    .servico-item .servico-nome { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .servico-item .servico-valor { font-weight: 700; font-size: 1.1rem; color: var(--success-color); white-space: nowrap; }
+    .servico-item .servico-valor.hidden { visibility: hidden; }
+    
+    /* Orçamento */
+    .orcamento-card { background: linear-gradient(135deg, #f8f9fa, #e9ecef); border: 2px solid var(--primary-color); }
+    .orcamento-total { font-size: 2rem; font-weight: 700; color: var(--primary-color); }
+    .btn-aprovar { background: linear-gradient(135deg, var(--success-color), #157347); border: none; color: white; padding: 15px 40px; border-radius: 12px; font-weight: 700; font-size: 1.2rem; box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3); transition: all 0.3s; }
+    .btn-aprovar:hover { background: linear-gradient(135deg, #157347, #146c43); color: white; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4); }
+    
+    /* Pagamento seção */
+    .pagamento-section { display: none; }
+    .pagamento-section.show { display: block; }
+    
     @media print { .no-print { display: none !important; } .section-card { break-inside: avoid; } }
   </style>
 </head>
@@ -160,6 +181,67 @@
 
     <!-- 3. Boxes Dinâmicos -->
     <div id="boxesContainer"></div>
+
+    <!-- Orçamento Total -->
+    <div class="section-card orcamento-card" id="sectionOrcamento">
+      <div class="section-header" style="background: linear-gradient(135deg, var(--primary-color), #0b5ed7);">
+        <i class="bi bi-receipt me-2"></i>Orçamento
+      </div>
+      <div class="section-body">
+        <div id="resumoServicos" class="mb-4">
+          <!-- Itens selecionados aparecem aqui -->
+        </div>
+        <div class="d-flex justify-content-between align-items-center border-top pt-3">
+          <div>
+            <span class="text-muted">Valor Total do Orçamento:</span>
+            <div class="orcamento-total" id="orcamentoTotal">R$ 0,00</div>
+          </div>
+          <button type="button" class="btn btn-aprovar" onclick="aprovarOrcamento()">
+            <i class="bi bi-check2-circle me-2"></i>Aprovar Orçamento
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Pagamento (aparece após aprovar) -->
+    <div class="section-card pagamento-section" id="sectionPagamento">
+      <div class="section-header warning"><i class="bi bi-credit-card me-2"></i>Pagamento</div>
+      <div class="section-body">
+        <div class="alert alert-success mb-4">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Orçamento aprovado!</strong> Preencha os dados de pagamento abaixo.
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Valor Total a Pagar</label>
+            <input type="text" class="form-control bg-light fs-4 fw-bold text-success" id="valorPagar" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Forma de Pagamento</label>
+            <select class="form-select" id="formaPagamento">
+              <option value="">Selecione...</option>
+              <option value="pix">PIX</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="cartao_credito">Cartão de Crédito</option>
+              <option value="cartao_debito">Cartão de Débito</option>
+              <option value="transferencia">Transferência Bancária</option>
+              <option value="boleto">Boleto</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Data do Pagamento</label>
+            <input type="date" class="form-control" id="dataPagamento">
+          </div>
+          <div class="col-12 mt-3">
+            <button type="button" class="btn btn-lg btn-success w-100" onclick="confirmarPagamento()">
+              <i class="bi bi-check-lg me-2"></i>Confirmar Pagamento
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
 
     <!-- 4. Data da Solicitação -->
     <div class="section-card">
@@ -245,46 +327,6 @@
 
     <div class="divider"></div>
 
-    <!-- Dados Financeiros -->
-    <div class="section-card">
-      <div class="section-header warning"><i class="bi bi-currency-dollar me-2"></i>Dados Financeiros</div>
-      <div class="section-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Valor Manutenção Anual (R$)</label>
-            <input type="number" class="form-control" placeholder="0,00" step="0.01" id="valorManut" oninput="updateValorTotal()">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Valor Colocação de Película (R$)</label>
-            <input type="number" class="form-control" placeholder="0,00" step="0.01" id="valorPelicula" oninput="updateValorTotal()">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold">Valor Total (R$)</label>
-            <input type="number" class="form-control bg-light" placeholder="0,00" step="0.01" id="valorTotal" readonly>
-          </div>
-        </div>
-        <hr>
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Data do Pagamento</label>
-            <input type="date" class="form-control" id="dataPagamento">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Forma de Pagamento</label>
-            <select class="form-select" id="formaPagamento">
-              <option value="">Selecione...</option>
-              <option value="pix">PIX</option>
-              <option value="dinheiro">Dinheiro</option>
-              <option value="cartao_credito">Cartão de Crédito</option>
-              <option value="cartao_debito">Cartão de Débito</option>
-              <option value="transferencia">Transferência Bancária</option>
-              <option value="boleto">Boleto</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Avaliação do Cliente -->
     <div class="section-card">
       <div class="section-header" style="background: linear-gradient(135deg, #fd7e14, #e55300);">
@@ -323,9 +365,7 @@
           <h5 class="modal-title"><i class="bi bi-tools me-2"></i>Manutenção Anual - Box <span id="modalManutBoxNum"></span></h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="modalManutBody">
-          <!-- Conteúdo gerado dinamicamente -->
-        </div>
+        <div class="modal-body" id="modalManutBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
           <button type="button" class="btn btn-success" onclick="finalizarManutencao()">
@@ -344,12 +384,10 @@
           <h5 class="modal-title"><i class="bi bi-shield-check me-2"></i>Colocação de Película - Box <span id="modalPeliculaBoxNum"></span></h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="modalPeliculaBody">
-          <!-- Conteúdo gerado dinamicamente -->
-        </div>
+        <div class="modal-body" id="modalPeliculaBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-          <button type="button" class="btn btn-manutencao btn-pelicula" onclick="finalizarPelicula()">
+          <button type="button" class="btn btn-pelicula" onclick="finalizarPelicula()">
             <i class="bi bi-check-circle me-2"></i>Finalizar Película
           </button>
         </div>
@@ -359,7 +397,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Preços configuráveis
+    const PRECO_MANUTENCAO = 250.00;
+    const PRECO_PELICULA = 180.00;
+
     let currentBoxIndex = 0;
+
+    // Formatar moeda
+    function formatCurrency(value) {
+      return 'R$ ' + value.toFixed(2).replace('.', ',');
+    }
 
     // Gerar HTML de um box
     function createBoxHTML(index) {
@@ -384,13 +431,36 @@
               </div>
               <img id="previewBox-${index}" class="photo-preview" alt="Preview">
             </div>
+            
+            <!-- Seleção de Serviços -->
             <div class="col-12">
-              <div class="d-flex gap-3 flex-wrap">
-                <button type="button" class="btn btn-manutencao" onclick="abrirModalManutencao(${index})">
-                  <i class="bi bi-tools me-2"></i>Manutenção Anual
+              <label class="form-label mb-2">Selecione os serviços:</label>
+              
+              <div class="servico-item" id="servicoManut-${index}" onclick="toggleServico(${index}, 'manut')">
+                <input class="form-check-input" type="checkbox" id="checkManut-${index}">
+                <div class="servico-info">
+                  <div class="servico-nome">
+                    <i class="bi bi-tools text-success"></i>
+                    Manutenção Anual
+                  </div>
+                </div>
+                <span class="servico-valor hidden" id="valorManut-${index}">${formatCurrency(PRECO_MANUTENCAO)}</span>
+                <button type="button" class="btn btn-sm btn-manutencao ms-2" onclick="event.stopPropagation(); abrirModalManutencao(${index})" style="display: none;" id="btnManut-${index}">
+                  <i class="bi bi-list-check"></i>
                 </button>
-                <button type="button" class="btn btn-pelicula" onclick="abrirModalPelicula(${index})">
-                  <i class="bi bi-shield-check me-2"></i>Troca de Película
+              </div>
+              
+              <div class="servico-item" id="servicoPelicula-${index}" onclick="toggleServico(${index}, 'pelicula')">
+                <input class="form-check-input" type="checkbox" id="checkPelicula-${index}">
+                <div class="servico-info">
+                  <div class="servico-nome">
+                    <i class="bi bi-shield-check text-purple" style="color: var(--purple-color);"></i>
+                    Troca de Película
+                  </div>
+                </div>
+                <span class="servico-valor hidden" id="valorPelicula-${index}">${formatCurrency(PRECO_PELICULA)}</span>
+                <button type="button" class="btn btn-sm btn-pelicula ms-2" onclick="event.stopPropagation(); abrirModalPelicula(${index})" style="display: none;" id="btnPelicula-${index}">
+                  <i class="bi bi-list-check"></i>
                 </button>
               </div>
             </div>
@@ -399,7 +469,92 @@
       `;
     }
 
-    // Renderizar boxes baseado na quantidade
+    // Toggle serviço
+    function toggleServico(boxIndex, tipo) {
+      const checkId = tipo === 'manut' ? `checkManut-${boxIndex}` : `checkPelicula-${boxIndex}`;
+      const servicoId = tipo === 'manut' ? `servicoManut-${boxIndex}` : `servicoPelicula-${boxIndex}`;
+      const valorId = tipo === 'manut' ? `valorManut-${boxIndex}` : `valorPelicula-${boxIndex}`;
+      const btnId = tipo === 'manut' ? `btnManut-${boxIndex}` : `btnPelicula-${boxIndex}`;
+
+      const checkbox = document.getElementById(checkId);
+      const servico = document.getElementById(servicoId);
+      const valor = document.getElementById(valorId);
+      const btn = document.getElementById(btnId);
+
+      checkbox.checked = !checkbox.checked;
+
+      if (checkbox.checked) {
+        servico.classList.add('selected');
+        valor.classList.remove('hidden');
+        btn.style.display = 'inline-block';
+      } else {
+        servico.classList.remove('selected');
+        valor.classList.add('hidden');
+        btn.style.display = 'none';
+      }
+
+      atualizarOrcamento();
+    }
+
+    // Atualizar orçamento
+    function atualizarOrcamento() {
+      const qtd = parseInt(document.getElementById('qtdBox').value) || 1;
+      let total = 0;
+      let resumoHTML = '';
+
+      for (let i = 0; i < qtd; i++) {
+        const ambiente = document.getElementById(`ambiente-${i}`)?.value || `Box ${i + 1}`;
+        const checkManut = document.getElementById(`checkManut-${i}`);
+        const checkPelicula = document.getElementById(`checkPelicula-${i}`);
+
+        if (checkManut?.checked) {
+          total += PRECO_MANUTENCAO;
+          resumoHTML += `
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span><i class="bi bi-tools text-success me-2"></i>Manutenção Anual - ${ambiente}</span>
+              <span class="fw-bold">${formatCurrency(PRECO_MANUTENCAO)}</span>
+            </div>
+          `;
+        }
+        if (checkPelicula?.checked) {
+          total += PRECO_PELICULA;
+          resumoHTML += `
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span><i class="bi bi-shield-check me-2" style="color: var(--purple-color);"></i>Troca de Película - ${ambiente}</span>
+              <span class="fw-bold">${formatCurrency(PRECO_PELICULA)}</span>
+            </div>
+          `;
+        }
+      }
+
+      document.getElementById('resumoServicos').innerHTML = resumoHTML || '<p class="text-muted text-center py-3">Nenhum serviço selecionado</p>';
+      document.getElementById('orcamentoTotal').textContent = formatCurrency(total);
+    }
+
+    // Aprovar orçamento
+    function aprovarOrcamento() {
+      const total = document.getElementById('orcamentoTotal').textContent;
+      if (total === 'R$ 0,00') {
+        alert('Selecione pelo menos um serviço para aprovar o orçamento.');
+        return;
+      }
+
+      document.getElementById('valorPagar').value = total;
+      document.getElementById('sectionPagamento').classList.add('show');
+      document.getElementById('sectionPagamento').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Confirmar pagamento
+    function confirmarPagamento() {
+      const forma = document.getElementById('formaPagamento').value;
+      if (!forma) {
+        alert('Selecione a forma de pagamento.');
+        return;
+      }
+      alert('Pagamento confirmado com sucesso!\n\nO serviço será agendado em breve.');
+    }
+
+    // Renderizar boxes
     function renderBoxes() {
       const qtd = parseInt(document.getElementById('qtdBox').value) || 1;
       const container = document.getElementById('boxesContainer');
@@ -407,6 +562,7 @@
       for (let i = 0; i < qtd; i++) {
         container.innerHTML += createBoxHTML(i);
       }
+      atualizarOrcamento();
     }
 
     // Abrir modal de Manutenção Anual
@@ -456,7 +612,7 @@
           </div>
           <p class="text-muted small mb-2">Analise o funcionamento e estado geral do box</p>
           <label class="form-label">Análise:</label>
-          <textarea class="form-control" rows="4" id="manut-analise-${boxIndex}" placeholder="Descreva em que estado encontrou o box, funcionamento das roldanas, trilho, vedação, etc..."></textarea>
+          <textarea class="form-control" rows="4" id="manut-analise-${boxIndex}" placeholder="Descreva em que estado encontrou o box..."></textarea>
         </div>
 
         <div class="checklist-item">
@@ -468,7 +624,6 @@
               <label class="form-check-label" for="manut-check3-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small mb-2">Realize a troca das roldanas e tire foto das roldanas novas</p>
           <div class="photo-upload" onclick="document.getElementById('manut-foto3-${boxIndex}').click()">
             <i class="bi bi-camera"></i>
             <p class="mb-0 mt-2 text-muted">Foto das roldanas novas</p>
@@ -486,7 +641,6 @@
               <label class="form-check-label" for="manut-check4-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small mb-2">Analise o estado interno do trilho, fixações, batedores e realize a limpeza</p>
           <div class="photo-upload" onclick="document.getElementById('manut-foto4-${boxIndex}').click()">
             <i class="bi bi-camera"></i>
             <p class="mb-0 mt-2 text-muted">Foto do trilho limpo</p>
@@ -508,17 +662,13 @@
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="manut-trincas-${boxIndex}">
-                <label class="form-check-label text-danger" for="manut-trincas-${boxIndex}">
-                  <i class="bi bi-exclamation-triangle me-1"></i>Existem trincas?
-                </label>
+                <label class="form-check-label text-danger" for="manut-trincas-${boxIndex}">Existem trincas?</label>
               </div>
             </div>
             <div class="col-6">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="manut-substituir-${boxIndex}">
-                <label class="form-check-label text-warning" for="manut-substituir-${boxIndex}">
-                  <i class="bi bi-arrow-repeat me-1"></i>Necessário substituição?
-                </label>
+                <label class="form-check-label text-warning" for="manut-substituir-${boxIndex}">Necessário substituição?</label>
               </div>
             </div>
           </div>
@@ -539,7 +689,6 @@
               <label class="form-check-label" for="manut-check6-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small mb-2">Realize a remontagem geral do box e tire foto final</p>
           <div class="photo-upload" onclick="document.getElementById('manut-foto6-${boxIndex}').click()">
             <i class="bi bi-camera"></i>
             <p class="mb-0 mt-2 text-muted">Foto final após manutenção</p>
@@ -553,7 +702,6 @@
             <span class="checklist-number" style="background: var(--success-color);"><i class="bi bi-pen"></i></span>
             <span class="fw-bold">Assinatura do Prestador</span>
           </div>
-          <p class="text-muted small mb-2">Assine confirmando a responsabilidade pela manutenção realizada</p>
           <canvas id="signatureManut-${boxIndex}" class="signature-pad" width="400" height="150"></canvas>
           <div class="mt-2">
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSignature('signatureManut-${boxIndex}')">
@@ -593,7 +741,7 @@
               <label class="form-check-label" for="pel-check2-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small">Verifique se o vidro está em condições adequadas para receber a película</p>
+          <p class="text-muted small">Verifique se o vidro está em condições adequadas</p>
         </div>
 
         <div class="checklist-item">
@@ -605,7 +753,6 @@
               <label class="form-check-label" for="pel-check3-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small">Realize a limpeza completa do vidro</p>
         </div>
 
         <div class="checklist-item">
@@ -617,7 +764,6 @@
               <label class="form-check-label" for="pel-check4-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small">Retire a porta do box, as roldanas e o puxador</p>
         </div>
 
         <div class="checklist-item">
@@ -629,7 +775,6 @@
               <label class="form-check-label" for="pel-check5-${boxIndex}">Concluído</label>
             </div>
           </div>
-          <p class="text-muted small mb-2">Aplique a película na porta e recoloque roldanas e puxador</p>
           <div class="photo-upload" onclick="document.getElementById('pel-foto5-${boxIndex}').click()">
             <i class="bi bi-camera"></i>
             <p class="mb-0 mt-2 text-muted">Foto da porta com película</p>
@@ -736,13 +881,6 @@
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-    }
-
-    // Valor Total
-    function updateValorTotal() {
-      const manut = parseFloat(document.getElementById('valorManut').value) || 0;
-      const pelicula = parseFloat(document.getElementById('valorPelicula').value) || 0;
-      document.getElementById('valorTotal').value = (manut + pelicula).toFixed(2);
     }
 
     // Gerar Certificado
