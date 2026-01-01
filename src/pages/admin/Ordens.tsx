@@ -169,7 +169,7 @@ const Ordens = () => {
             </button>
             <h1 className="text-lg font-semibold text-foreground font-display">Ordens de Serviço</h1>
           </div>
-          <Button onClick={() => navigate("/admin/ordem/nova")} size="sm" className="gap-1">
+          <Button onClick={() => navigate("/admin/ordem-servico")} size="sm" className="gap-1">
             <Plus className="w-4 h-4" />
             Nova
           </Button>
@@ -271,7 +271,7 @@ const Ordens = () => {
                       variant="outline"
                       size="sm"
                       className="flex-1 gap-1"
-                      onClick={() => navigate(`/admin/ordem/${ordem.id}`)}
+                      onClick={() => navigate(`/admin/ordem-servico/${ordem.id}`)}
                     >
                       <Pencil className="w-4 h-4" />
                       Abrir
@@ -294,7 +294,7 @@ const Ordens = () => {
               <div className="text-center py-12">
                 <ClipboardList className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">Nenhuma ordem encontrada</p>
-                <Button variant="outline" className="mt-4" onClick={() => navigate("/admin/ordem/nova")}>
+                <Button variant="outline" className="mt-4" onClick={() => navigate("/admin/ordem-servico")}>
                   <Plus className="w-4 h-4 mr-2" /> Criar primeira ordem
                 </Button>
               </div>
