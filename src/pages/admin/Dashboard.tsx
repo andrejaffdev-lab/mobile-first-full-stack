@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Wrench, Building2, Map, DollarSign, ClipboardList, Clock, ChevronRight, MessageCircle } from "lucide-react";
+import { Users, Wrench, Building2, Map, DollarSign, ClipboardList, Clock, ChevronRight, MessageCircle, LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface RecentUser {
   id: string;
@@ -201,6 +203,12 @@ const AdminDashboard = () => {
     };
   }, []);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("Logout realizado com sucesso");
+    navigate("/login");
+  };
+
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">
       {/* Header */}
@@ -208,11 +216,22 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="flex items-start justify-between"
         >
-          <h1 className="text-2xl font-bold text-white font-display">
-            Painel Administrativo
-          </h1>
-          <p className="text-white/70 mt-1">Gestão completa do sistema</p>
+          <div>
+            <h1 className="text-2xl font-bold text-white font-display">
+              Painel Administrativo
+            </h1>
+            <p className="text-white/70 mt-1">Gestão completa do sistema</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="text-white hover:bg-white/20"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
         </motion.div>
       </div>
 
