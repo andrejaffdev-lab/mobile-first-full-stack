@@ -13,12 +13,23 @@ import {
   Pencil,
   Trash2,
   Star,
-  X
+  X,
+  Mail,
+  MapPin,
+  FileText,
+  CreditCard,
+  Briefcase,
+  Award,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Prestadores = () => {
   const navigate = useNavigate();
@@ -26,12 +37,110 @@ const Prestadores = () => {
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
 
   const [prestadores, setPrestadores] = useState([
-    { id: "1", nome: "João Montador", telefone: "(11) 99999-1111", status: "ativo", avaliacao: 4.8, servicos: 156 },
-    { id: "2", nome: "Pedro Silva", telefone: "(11) 99999-2222", status: "ativo", avaliacao: 4.5, servicos: 89 },
-    { id: "3", nome: "Carlos Lima", telefone: "(11) 99999-3333", status: "pendente", avaliacao: 0, servicos: 0 },
-    { id: "4", nome: "Marcos Oliveira", telefone: "(11) 99999-4444", status: "ativo", avaliacao: 4.9, servicos: 234 },
-    { id: "5", nome: "Ricardo Santos", telefone: "(11) 99999-5555", status: "inativo", avaliacao: 3.8, servicos: 45 },
-    { id: "6", nome: "Fernando Costa", telefone: "(11) 99999-6666", status: "pendente", avaliacao: 0, servicos: 0 },
+    { 
+      id: "1", 
+      nome: "João Montador", 
+      telefone: "(11) 99999-1111", 
+      email: "joao@email.com",
+      cpf: "123.456.789-00",
+      rg: "12.345.678-9",
+      endereco: "Rua das Oficinas, 100",
+      cidade: "São Paulo",
+      estado: "SP",
+      cep: "01234-567",
+      status: "ativo", 
+      avaliacao: 4.8, 
+      servicos: 156,
+      especialidades: ["Box", "Espelhos", "Portas"],
+      dadosBancarios: {
+        banco: "Nubank",
+        agencia: "0001",
+        conta: "12345678-9",
+        tipoConta: "Corrente",
+        pix: "joao@email.com"
+      },
+      dataCadastro: "15/06/2024",
+      documentosVerificados: true,
+      observacoes: "Profissional experiente, pontual"
+    },
+    { 
+      id: "2", 
+      nome: "Pedro Silva", 
+      telefone: "(11) 99999-2222", 
+      email: "pedro@email.com",
+      cpf: "234.567.890-11",
+      rg: "23.456.789-0",
+      endereco: "Av. Industrial, 200",
+      cidade: "São Paulo",
+      estado: "SP",
+      cep: "02345-678",
+      status: "ativo", 
+      avaliacao: 4.5, 
+      servicos: 89,
+      especialidades: ["Película", "Manutenção"],
+      dadosBancarios: {
+        banco: "Itaú",
+        agencia: "1234",
+        conta: "56789-0",
+        tipoConta: "Corrente",
+        pix: "(11) 99999-2222"
+      },
+      dataCadastro: "20/08/2024",
+      documentosVerificados: true,
+      observacoes: ""
+    },
+    { 
+      id: "3", 
+      nome: "Carlos Lima", 
+      telefone: "(11) 99999-3333", 
+      email: "carlos@email.com",
+      cpf: "345.678.901-22",
+      rg: "34.567.890-1",
+      endereco: "Rua Técnica, 300",
+      cidade: "Campinas",
+      estado: "SP",
+      cep: "03456-789",
+      status: "pendente", 
+      avaliacao: 0, 
+      servicos: 0,
+      especialidades: ["Box", "Janelas"],
+      dadosBancarios: {
+        banco: "",
+        agencia: "",
+        conta: "",
+        tipoConta: "",
+        pix: ""
+      },
+      dataCadastro: "28/12/2025",
+      documentosVerificados: false,
+      observacoes: "Aguardando envio de documentos"
+    },
+    { 
+      id: "4", 
+      nome: "Marcos Oliveira", 
+      telefone: "(11) 99999-4444", 
+      email: "marcos@email.com",
+      cpf: "456.789.012-33",
+      rg: "45.678.901-2",
+      endereco: "Rua dos Vidros, 400",
+      cidade: "São Paulo",
+      estado: "SP",
+      cep: "04567-890",
+      status: "ativo", 
+      avaliacao: 4.9, 
+      servicos: 234,
+      especialidades: ["Box", "Espelhos", "Portas", "Película"],
+      dadosBancarios: {
+        banco: "Bradesco",
+        agencia: "4567",
+        conta: "89012-3",
+        tipoConta: "Corrente",
+        pix: "456.789.012-33"
+      },
+      dataCadastro: "10/03/2024",
+      documentosVerificados: true,
+      observacoes: "Prestador premium, alta demanda"
+    },
   ]);
 
   const handleDelete = (id: string, nome: string) => {
@@ -99,6 +208,16 @@ const Prestadores = () => {
       default:
         return "bg-muted text-muted-foreground";
     }
+  };
+
+  const especialidadesDisponiveis = ["Box", "Espelhos", "Portas", "Película", "Manutenção", "Janelas", "Vidros Temperados"];
+
+  const toggleEspecialidade = (esp: string) => {
+    if (!editingPrestador) return;
+    const novas = editingPrestador.especialidades.includes(esp)
+      ? editingPrestador.especialidades.filter(e => e !== esp)
+      : [...editingPrestador.especialidades, esp];
+    setEditingPrestador({ ...editingPrestador, especialidades: novas });
   };
 
   return (
@@ -256,43 +375,275 @@ const Prestadores = () => {
         )}
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição Completo */}
       {editingPrestador && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background rounded-xl p-6 w-full max-w-md"
+            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <h2 className="text-lg font-semibold">Editar Prestador</h2>
               <button onClick={() => setEditingPrestador(null)} className="p-1 hover:bg-muted rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={editingPrestador.nome}
-                  onChange={(e) => setEditingPrestador({ ...editingPrestador, nome: e.target.value })}
-                />
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-6">
+                {/* Dados Pessoais */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" />
+                    Dados Pessoais
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label>Nome Completo</Label>
+                      <Input
+                        value={editingPrestador.nome}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, nome: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>CPF</Label>
+                      <Input
+                        value={editingPrestador.cpf}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, cpf: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>RG</Label>
+                      <Input
+                        value={editingPrestador.rg}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, rg: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Telefone</Label>
+                      <Input
+                        value={editingPrestador.telefone}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, telefone: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input
+                        type="email"
+                        value={editingPrestador.email}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, email: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endereço */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Endereço
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label>Endereço</Label>
+                      <Input
+                        value={editingPrestador.endereco}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, endereco: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Cidade</Label>
+                      <Input
+                        value={editingPrestador.cidade}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, cidade: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Estado</Label>
+                      <Input
+                        value={editingPrestador.estado}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, estado: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>CEP</Label>
+                      <Input
+                        value={editingPrestador.cep}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, cep: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={editingPrestador.status}
+                        onValueChange={(value) => setEditingPrestador({ ...editingPrestador, status: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ativo">Ativo</SelectItem>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="inativo">Inativo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Especialidades */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    Especialidades
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {especialidadesDisponiveis.map((esp) => (
+                      <button
+                        key={esp}
+                        onClick={() => toggleEspecialidade(esp)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                          editingPrestador.especialidades.includes(esp)
+                            ? "bg-primary text-white"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        {esp}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dados Bancários */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Dados Bancários
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Banco</Label>
+                      <Input
+                        value={editingPrestador.dadosBancarios.banco}
+                        onChange={(e) => setEditingPrestador({ 
+                          ...editingPrestador, 
+                          dadosBancarios: { ...editingPrestador.dadosBancarios, banco: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Tipo de Conta</Label>
+                      <Select
+                        value={editingPrestador.dadosBancarios.tipoConta}
+                        onValueChange={(value) => setEditingPrestador({ 
+                          ...editingPrestador, 
+                          dadosBancarios: { ...editingPrestador.dadosBancarios, tipoConta: value }
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Corrente">Corrente</SelectItem>
+                          <SelectItem value="Poupança">Poupança</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Agência</Label>
+                      <Input
+                        value={editingPrestador.dadosBancarios.agencia}
+                        onChange={(e) => setEditingPrestador({ 
+                          ...editingPrestador, 
+                          dadosBancarios: { ...editingPrestador.dadosBancarios, agencia: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Conta</Label>
+                      <Input
+                        value={editingPrestador.dadosBancarios.conta}
+                        onChange={(e) => setEditingPrestador({ 
+                          ...editingPrestador, 
+                          dadosBancarios: { ...editingPrestador.dadosBancarios, conta: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Chave PIX</Label>
+                      <Input
+                        value={editingPrestador.dadosBancarios.pix}
+                        onChange={(e) => setEditingPrestador({ 
+                          ...editingPrestador, 
+                          dadosBancarios: { ...editingPrestador.dadosBancarios, pix: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Métricas e Status */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    Métricas
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Avaliação</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="5"
+                        value={editingPrestador.avaliacao}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, avaliacao: parseFloat(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Serviços Realizados</Label>
+                      <Input
+                        type="number"
+                        value={editingPrestador.servicos}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, servicos: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Data de Cadastro</Label>
+                      <Input
+                        value={editingPrestador.dataCadastro}
+                        onChange={(e) => setEditingPrestador({ ...editingPrestador, dataCadastro: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 pt-6">
+                      <Checkbox
+                        id="docs"
+                        checked={editingPrestador.documentosVerificados}
+                        onCheckedChange={(checked) => setEditingPrestador({ ...editingPrestador, documentosVerificados: !!checked })}
+                      />
+                      <Label htmlFor="docs" className="cursor-pointer">Documentos Verificados</Label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea
+                    value={editingPrestador.observacoes}
+                    onChange={(e) => setEditingPrestador({ ...editingPrestador, observacoes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Telefone</Label>
-                <Input
-                  value={editingPrestador.telefone}
-                  onChange={(e) => setEditingPrestador({ ...editingPrestador, telefone: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingPrestador(null)}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleSaveEdit}>
-                  Salvar
-                </Button>
-              </div>
+            </ScrollArea>
+            <div className="flex gap-2 p-6 border-t border-border">
+              <Button variant="outline" className="flex-1" onClick={() => setEditingPrestador(null)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={handleSaveEdit}>
+                Salvar
+              </Button>
             </div>
           </motion.div>
         </div>
