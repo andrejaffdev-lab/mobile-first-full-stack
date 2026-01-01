@@ -19,7 +19,15 @@ import Profile from "./pages/cliente/Profile";
 import Chat from "./pages/Chat";
 import PrestadorDashboard from "./pages/prestador/Dashboard";
 import Tarefas from "./pages/prestador/Tarefas";
+import DetalheServicoPrestador from "./pages/prestador/DetalheServico";
+import Ganhos from "./pages/prestador/Ganhos";
+import Assinatura from "./pages/prestador/Assinatura";
+import ProfilePrestador from "./pages/prestador/Profile";
 import VidracariaDashboard from "./pages/vidracaria/Dashboard";
+import CadastrarCliente from "./pages/vidracaria/CadastrarCliente";
+import Clientes from "./pages/vidracaria/Clientes";
+import Comissoes from "./pages/vidracaria/Comissoes";
+import ProfileVidracaria from "./pages/vidracaria/Profile";
 import AdminDashboard from "./pages/admin/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -53,11 +61,19 @@ const App = () => (
           
           {/* Prestador */}
           <Route path="/dashboard/prestador" element={<PrestadorDashboard />} />
+          <Route path="/prestador/servico/:id" element={<DetalheServicoPrestador />} />
           <Route path="/prestador/tarefas/:id" element={<Tarefas />} />
           <Route path="/prestador/tarefas" element={<Tarefas />} />
+          <Route path="/prestador/assinatura" element={<Assinatura />} />
+          <Route path="/prestador/ganhos" element={<Ganhos />} />
+          <Route path="/prestador/profile" element={<ProfilePrestador />} />
           
           {/* Vidraçaria */}
           <Route path="/dashboard/vidracaria" element={<VidracariaDashboard />} />
+          <Route path="/vidracaria/cadastrar-cliente" element={<CadastrarCliente />} />
+          <Route path="/vidracaria/clientes" element={<Clientes />} />
+          <Route path="/vidracaria/comissoes" element={<Comissoes />} />
+          <Route path="/vidracaria/profile" element={<ProfileVidracaria />} />
           
           {/* Admin */}
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
