@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Mail, Lock, Eye, EyeOff, User, Phone, Building, ArrowLeft, MapPin, 
@@ -26,7 +26,10 @@ const qualificacoes = [
 
 const Register = () => {
   const navigate = useNavigate();
-  const [profileType, setProfileType] = useState<ProfileType>(null);
+  const location = useLocation();
+  const initialProfileType = (location.state as { profileType?: ProfileType })?.profileType || null;
+  
+  const [profileType, setProfileType] = useState<ProfileType>(initialProfileType);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
