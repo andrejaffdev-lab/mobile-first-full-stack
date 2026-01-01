@@ -15,15 +15,67 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface ClienteData {
+  id: string;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  endereco: string | null;
+  numero: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  estado: string | null;
+}
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [cliente, setCliente] = useState<ClienteData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = {
-    name: "João Silva",
-    email: "joao.silva@email.com",
-    phone: "(11) 99999-9999",
-    address: "Rua das Flores, 123 - Centro, São Paulo - SP",
+  useEffect(() => {
+    const fetchCliente = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Erro ao buscar cliente:', error);
+        } else {
+          setCliente(data);
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCliente();
+  }, [navigate]);
+
+  const formatAddress = () => {
+    if (!cliente) return 'Endereço não cadastrado';
+    const parts = [
+      cliente.endereco,
+      cliente.numero,
+      cliente.bairro,
+      cliente.cidade,
+      cliente.estado
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'Endereço não cadastrado';
   };
 
   const menuItems = [
@@ -53,8 +105,8 @@ const Profile = () => {
     },
   ];
 
-  const handleLogout = () => {
-    // Limpa sessão e redireciona para login
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate("/login");
   };
 
@@ -71,7 +123,7 @@ const Profile = () => {
             <User className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white font-display mt-4">
-            {user.name}
+            {loading ? 'Carregando...' : (cliente?.nome || 'Cliente')}
           </h1>
           <p className="text-white/70 mt-1">Cliente</p>
         </motion.div>
@@ -96,17 +148,17 @@ const Profile = () => {
             <div className="flex items-center gap-3 text-sm">
               <Mail className="w-5 h-5 text-muted-foreground" />
               <span className="text-muted-foreground">Email:</span>
-              <span className="text-foreground">{user.email}</span>
+              <span className="text-foreground">{cliente?.email || 'Não informado'}</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <Phone className="w-5 h-5 text-muted-foreground" />
               <span className="text-muted-foreground">Telefone:</span>
-              <span className="text-foreground">{user.phone}</span>
+              <span className="text-foreground">{cliente?.telefone || 'Não informado'}</span>
             </div>
             <div className="flex items-start gap-3 text-sm">
               <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
               <span className="text-muted-foreground">Endereço:</span>
-              <span className="text-foreground">{user.address}</span>
+              <span className="text-foreground">{formatAddress()}</span>
             </div>
           </div>
         </motion.div>
