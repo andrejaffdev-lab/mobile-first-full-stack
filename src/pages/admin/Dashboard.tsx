@@ -7,15 +7,10 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const stats = [
-    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary", link: "/admin/clientes" },
-    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success", link: "/admin/prestadores" },
-    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning", link: "/admin/vidracarias" },
-    { label: "Usuários", value: "216", icon: Users, color: "bg-accent/10 text-accent", link: "/admin/usuarios" },
-  ];
-
-  const secondaryStats = [
-    { label: "Total de Usuários", value: "216", icon: Users, color: "bg-primary/10 text-primary", link: "/admin/usuarios" },
-    { label: "Ordem de Serviços", value: "89", icon: ClipboardList, color: "bg-success/10 text-success", link: "/admin/ordens" },
+    { label: "Clientes", value: "156", icon: Users, color: "bg-primary/10 text-primary", link: "/vidracaria/clientes" },
+    { label: "Prestadores", value: "48", icon: Wrench, color: "bg-success/10 text-success", link: "/prestador/tarefas" },
+    { label: "Vidraçarias", value: "12", icon: Building2, color: "bg-warning/10 text-warning", link: "/dashboard/vidracaria" },
+    { label: "Ordem de Serviços", value: "89", icon: ClipboardList, color: "bg-accent/10 text-accent", link: "/orders" },
   ];
 
   const monthlyData = [
@@ -79,30 +74,6 @@ const AdminDashboard = () => {
           className="grid grid-cols-2 gap-3"
         >
           {stats.map((stat, index) => (
-            <button
-              key={index}
-              onClick={() => navigate(stat.link)}
-              className="bg-white rounded-xl p-4 shadow-card text-left hover:shadow-lg transition-shadow"
-            >
-              <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
-                <stat.icon className="w-5 h-5" />
-              </div>
-              <p className="text-2xl font-bold text-foreground font-display">
-                {stat.value}
-              </p>
-              <p className="text-xs text-muted-foreground">{stat.label}</p>
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Secondary Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="grid grid-cols-2 gap-3 mt-4"
-        >
-          {secondaryStats.map((stat, index) => (
             <button
               key={index}
               onClick={() => navigate(stat.link)}
