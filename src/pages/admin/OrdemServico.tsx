@@ -159,58 +159,90 @@ const OrdemServico: React.FC = () => {
       const now = new Date().toISOString().slice(0, 16);
       setDataConclusao(now);
       
-      // Criar PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
       
-      // Header
+      // ========== PÁGINA 1 - DADOS ==========
+      
+      // Header verde
       pdf.setFillColor(34, 139, 34);
-      pdf.rect(0, 0, pageWidth, 40, 'F');
+      pdf.rect(0, 0, pageWidth, 35, 'F');
       pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(22);
-      pdf.text("CERTIFICADO DE MANUTENÇÃO", pageWidth / 2, 20, { align: 'center' });
-      pdf.setFontSize(12);
-      pdf.text("Manutenção Anual de Box de Vidro", pageWidth / 2, 30, { align: 'center' });
-      
-      // Reset color
-      pdf.setTextColor(0, 0, 0);
-      let yPos = 55;
-      
-      // Cliente info
-      pdf.setFontSize(14);
+      pdf.setFontSize(20);
       pdf.setFont(undefined, 'bold');
-      pdf.text("Dados do Cliente", 15, yPos);
-      yPos += 8;
+      pdf.text("CERTIFICADO DE MANUTENÇÃO", pageWidth / 2, 15, { align: 'center' });
       pdf.setFontSize(11);
       pdf.setFont(undefined, 'normal');
-      pdf.text(`Nome: ${cliente.nome || 'Não informado'}`, 15, yPos);
-      yPos += 6;
-      pdf.text(`Telefone: ${cliente.telefone || 'Não informado'}`, 15, yPos);
-      yPos += 6;
-      pdf.text(`E-mail: ${cliente.email || 'Não informado'}`, 15, yPos);
-      yPos += 6;
-      const endereco = `${cliente.endereco || ''}, ${cliente.numero || ''} ${cliente.complemento || ''} - ${cliente.bairro || ''}, ${cliente.cidade || ''}-${cliente.estado || ''} CEP: ${cliente.cep || ''}`;
-      pdf.text(`Endereço: ${endereco.trim()}`, 15, yPos, { maxWidth: pageWidth - 30 });
-      yPos += 15;
+      pdf.text("Manutenção Anual de Box de Vidro", pageWidth / 2, 25, { align: 'center' });
       
-      // Serviços
-      pdf.setFontSize(14);
+      pdf.setTextColor(0, 0, 0);
+      let yPos = 45;
+      
+      // ---- CONTRATANTE ----
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPos - 5, contentWidth, 8, 'F');
+      pdf.setFontSize(12);
       pdf.setFont(undefined, 'bold');
-      pdf.text("Serviços Realizados", 15, yPos);
-      yPos += 8;
-      pdf.setFontSize(11);
+      pdf.text("DADOS DO CONTRATANTE", margin + 3, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Nome: ${cliente.nome || '___________________________'}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Telefone: ${cliente.telefone || '_______________'}`, margin, yPos);
+      pdf.text(`E-mail: ${cliente.email || '________________________'}`, pageWidth / 2, yPos);
+      yPos += 6;
+      pdf.text(`Endereço: ${cliente.endereco || '_________________'}, Nº ${cliente.numero || '____'}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Complemento: ${cliente.complemento || '_________'}  Bairro: ${cliente.bairro || '_______________'}`, margin, yPos);
+      yPos += 6;
+      pdf.text(`Cidade: ${cliente.cidade || '_______________'} - ${cliente.estado || '__'}  CEP: ${cliente.cep || '________'}`, margin, yPos);
+      yPos += 12;
+      
+      // ---- PRESTADOR ----
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPos - 5, contentWidth, 8, 'F');
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("DADOS DO PRESTADOR DE SERVIÇO", margin + 3, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'normal');
+      pdf.text(`Nome: ${prestadorNome || '___________________________'}`, margin, yPos);
+      pdf.text(`Telefone: ${prestadorTelefone || '_______________'}`, pageWidth / 2, yPos);
+      yPos += 6;
+      pdf.text(`Data do Contato: ${dataContato || '____/____/______'}`, margin, yPos);
+      pdf.text(`Data do Agendamento: ${dataAgendamento || '____/____/______'}`, pageWidth / 2, yPos);
+      yPos += 12;
+      
+      // ---- SERVIÇOS ----
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPos - 5, contentWidth, 8, 'F');
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("SERVIÇOS CONTRATADOS", margin + 3, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(10);
       pdf.setFont(undefined, 'normal');
       
       boxes.forEach((box, index) => {
         if (box.manutencaoSelecionada || box.peliculaSelecionada) {
-          pdf.text(`Box ${index + 1} - ${box.ambiente || 'Ambiente não informado'}:`, 15, yPos);
-          yPos += 6;
+          pdf.setFont(undefined, 'bold');
+          pdf.text(`Box ${index + 1}: ${box.ambiente || 'Ambiente não informado'}`, margin, yPos);
+          yPos += 5;
+          pdf.setFont(undefined, 'normal');
           if (box.manutencaoSelecionada) {
-            pdf.text(`  • Manutenção Anual - ${formatCurrency(PRECO_MANUTENCAO)}`, 20, yPos);
+            pdf.text(`   • Manutenção Anual .................................. ${formatCurrency(PRECO_MANUTENCAO)}`, margin, yPos);
             yPos += 5;
           }
           if (box.peliculaSelecionada) {
-            pdf.text(`  • Troca de Película - ${formatCurrency(PRECO_PELICULA)}`, 20, yPos);
+            pdf.text(`   • Troca de Película .................................. ${formatCurrency(PRECO_PELICULA)}`, margin, yPos);
             yPos += 5;
           }
           yPos += 3;
@@ -218,33 +250,143 @@ const OrdemServico: React.FC = () => {
       });
       
       yPos += 5;
-      pdf.setFontSize(14);
       pdf.setFont(undefined, 'bold');
-      pdf.text(`Valor Total: ${formatCurrency(calcularTotal())}`, 15, yPos);
+      pdf.setFontSize(12);
+      pdf.text(`VALOR TOTAL: ${formatCurrency(calcularTotal())}`, margin, yPos);
       yPos += 15;
       
-      // Garantia
+      // ---- PASSO A PASSO DO SERVIÇO ----
       pdf.setFillColor(240, 240, 240);
-      pdf.rect(10, yPos - 5, pageWidth - 20, 25, 'F');
+      pdf.rect(margin, yPos - 5, contentWidth, 8, 'F');
       pdf.setFontSize(12);
-      pdf.text("GARANTIA DE 1 ANO", pageWidth / 2, yPos + 3, { align: 'center' });
+      pdf.setFont(undefined, 'bold');
+      pdf.text("PASSO A PASSO DO SERVIÇO", margin + 3, yPos);
+      yPos += 10;
+      
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, 'normal');
+      const passos = [
+        "1. Análise inicial do box e verificação das condições",
+        "2. Desmontagem cuidadosa das peças (portas, vidros fixos)",
+        "3. Limpeza completa dos trilhos e roldanas",
+        "4. Troca de roldanas danificadas (se necessário)",
+        "5. Verificação e análise do vidro (trincas, riscos)",
+        "6. Aplicação de película (se contratado)",
+        "7. Remontagem completa do box",
+        "8. Teste de funcionamento e ajustes finais",
+        "9. Limpeza final e entrega ao cliente"
+      ];
+      passos.forEach(passo => {
+        pdf.text(passo, margin, yPos);
+        yPos += 5;
+      });
+      
+      yPos += 10;
+      
+      // ---- GARANTIA ----
+      pdf.setFillColor(34, 139, 34);
+      pdf.rect(margin, yPos - 3, contentWidth, 18, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(11);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("GARANTIA DE 1 (UM) ANO", pageWidth / 2, yPos + 4, { align: 'center' });
+      pdf.setFontSize(9);
+      pdf.setFont(undefined, 'normal');
+      pdf.text("Este certificado garante a manutenção realizada pelo período de 1 ano a partir da data de conclusão.", pageWidth / 2, yPos + 11, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+      
+      // ========== PÁGINA 2 - FOTOS E ASSINATURAS ==========
+      pdf.addPage();
+      
+      // Header
+      pdf.setFillColor(34, 139, 34);
+      pdf.rect(0, 0, pageWidth, 20, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("REGISTRO FOTOGRÁFICO", pageWidth / 2, 13, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+      
+      yPos = 30;
+      const fotoWidth = 55;
+      const fotoHeight = 40;
+      
+      // Função para desenhar placeholder de foto
+      const desenharFoto = (x: number, y: number, label: string) => {
+        pdf.setFillColor(220, 220, 220);
+        pdf.rect(x, y, fotoWidth, fotoHeight, 'F');
+        pdf.setDrawColor(180, 180, 180);
+        pdf.rect(x, y, fotoWidth, fotoHeight, 'S');
+        pdf.setFontSize(8);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(label, x + fotoWidth / 2, y + fotoHeight / 2, { align: 'center' });
+        pdf.setTextColor(0, 0, 0);
+      };
+      
+      // Fotos - Linha 1
+      pdf.setFontSize(10);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("Antes do Serviço:", margin, yPos);
+      yPos += 5;
+      desenharFoto(margin, yPos, "Foto Inicial Box");
+      desenharFoto(margin + fotoWidth + 5, yPos, "Foto Roldanas");
+      desenharFoto(margin + (fotoWidth + 5) * 2, yPos, "Foto Trilho");
+      yPos += fotoHeight + 10;
+      
+      // Fotos - Linha 2
+      pdf.text("Durante o Serviço:", margin, yPos);
+      yPos += 5;
+      desenharFoto(margin, yPos, "Análise Vidro");
+      desenharFoto(margin + fotoWidth + 5, yPos, "Limpeza");
+      desenharFoto(margin + (fotoWidth + 5) * 2, yPos, "Aplicação Película");
+      yPos += fotoHeight + 10;
+      
+      // Fotos - Linha 3
+      pdf.text("Após o Serviço:", margin, yPos);
+      yPos += 5;
+      desenharFoto(margin, yPos, "Foto Final Box");
+      desenharFoto(margin + fotoWidth + 5, yPos, "Detalhe Porta");
+      desenharFoto(margin + (fotoWidth + 5) * 2, yPos, "Vidro Fixo");
+      yPos += fotoHeight + 15;
+      
+      // ---- ASSINATURAS ----
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, yPos - 3, contentWidth, 8, 'F');
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'bold');
+      pdf.text("ASSINATURAS", margin + 3, yPos + 2);
+      yPos += 15;
+      
+      const dataFormatada = new Date().toLocaleDateString('pt-BR');
       pdf.setFontSize(10);
       pdf.setFont(undefined, 'normal');
-      pdf.text("Este certificado garante a manutenção realizada pelo período de 1 (um) ano", pageWidth / 2, yPos + 10, { align: 'center' });
-      pdf.text("a partir da data de conclusão do serviço.", pageWidth / 2, yPos + 15, { align: 'center' });
-      yPos += 30;
-      
-      // Data e assinatura
-      pdf.setFontSize(11);
-      const dataFormatada = new Date().toLocaleDateString('pt-BR');
-      pdf.text(`Data de Conclusão: ${dataFormatada}`, 15, yPos);
+      pdf.text(`Data de Conclusão: ${dataFormatada}`, margin, yPos);
       yPos += 20;
       
-      pdf.line(15, yPos, 90, yPos);
-      pdf.text("Assinatura do Prestador", 15, yPos + 5);
+      // Assinatura Prestador
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(margin, yPos, 80, 25, 'F');
+      pdf.setDrawColor(180, 180, 180);
+      pdf.rect(margin, yPos, 80, 25, 'S');
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text("Assinatura do Prestador", margin + 40, yPos + 12, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(9);
+      pdf.text("_______________________________", margin + 5, yPos + 30);
+      pdf.text(prestadorNome || "Prestador de Serviço", margin + 5, yPos + 35);
       
-      pdf.line(pageWidth - 90, yPos, pageWidth - 15, yPos);
-      pdf.text("Assinatura do Cliente", pageWidth - 90, yPos + 5);
+      // Assinatura Cliente
+      pdf.setFillColor(245, 245, 245);
+      pdf.rect(pageWidth - margin - 80, yPos, 80, 25, 'F');
+      pdf.rect(pageWidth - margin - 80, yPos, 80, 25, 'S');
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text("Assinatura do Contratante", pageWidth - margin - 40, yPos + 12, { align: 'center' });
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(9);
+      pdf.text("_______________________________", pageWidth - margin - 75, yPos + 30);
+      pdf.text(cliente.nome || "Contratante", pageWidth - margin - 75, yPos + 35);
       
       // Download do PDF
       const nomeCliente = cliente.nome?.replace(/\s+/g, '_') || 'cliente';
