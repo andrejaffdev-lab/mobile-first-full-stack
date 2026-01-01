@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import RequireAdmin from "@/components/auth/RequireAdmin";
 
 // Pages
 import Login from "./pages/Login";
@@ -58,9 +59,8 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
           <Route path="/sobre" element={<LandingPage />} />
-          <Route path="/register" element={<Login />} />
           <Route path="/select-profile" element={<SelectProfile />} />
-          
+
           {/* Cliente */}
           <Route path="/dashboard/cliente" element={<ClienteDashboard />} />
           <Route path="/dashboard" element={<Navigate to="/dashboard/cliente" replace />} />
