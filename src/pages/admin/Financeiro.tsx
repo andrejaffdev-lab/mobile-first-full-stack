@@ -1,64 +1,121 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, CreditCard, Wallet, PiggyBank, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+
+interface Transaction {
+  id: string;
+  description: string;
+  type: "income" | "expense";
+  value: number;
+  date: string;
+}
 
 const AdminFinanceiro = () => {
   const navigate = useNavigate();
-
-  const summaryCards = [
-    { label: "Receita Total", value: "R$ 918.000", change: "+12%", icon: DollarSign, color: "bg-success/10 text-success", trend: "up" },
-    { label: "Despesas", value: "R$ 470.000", change: "+8%", icon: CreditCard, color: "bg-destructive/10 text-destructive", trend: "up" },
-    { label: "Lucro Líquido", value: "R$ 448.000", change: "+18%", icon: Wallet, color: "bg-primary/10 text-primary", trend: "up" },
-    { label: "Reserva", value: "R$ 125.000", change: "+5%", icon: PiggyBank, color: "bg-warning/10 text-warning", trend: "up" },
-  ];
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summaryCards, setSummaryCards] = useState([
+    { label: "Receita Total", value: "R$ 0", change: "+0%", icon: DollarSign, color: "bg-success/10 text-success", trend: "up" },
+    { label: "Despesas", value: "R$ 0", change: "+0%", icon: CreditCard, color: "bg-destructive/10 text-destructive", trend: "up" },
+    { label: "Lucro Líquido", value: "R$ 0", change: "+0%", icon: Wallet, color: "bg-primary/10 text-primary", trend: "up" },
+    { label: "Reserva", value: "R$ 0", change: "+0%", icon: PiggyBank, color: "bg-warning/10 text-warning", trend: "up" },
+  ]);
 
   const monthlyData = [
-    { month: "Jan", receita: 45000, despesas: 28000, lucro: 17000 },
-    { month: "Fev", receita: 52000, despesas: 31000, lucro: 21000 },
-    { month: "Mar", receita: 48000, despesas: 29000, lucro: 19000 },
-    { month: "Abr", receita: 61000, despesas: 35000, lucro: 26000 },
-    { month: "Mai", receita: 55000, despesas: 32000, lucro: 23000 },
-    { month: "Jun", receita: 67000, despesas: 38000, lucro: 29000 },
-    { month: "Jul", receita: 72000, despesas: 41000, lucro: 31000 },
-    { month: "Ago", receita: 69000, despesas: 39000, lucro: 30000 },
-    { month: "Set", receita: 78000, despesas: 44000, lucro: 34000 },
-    { month: "Out", receita: 82000, despesas: 46000, lucro: 36000 },
-    { month: "Nov", receita: 91000, despesas: 52000, lucro: 39000 },
-    { month: "Dez", receita: 98000, despesas: 55000, lucro: 43000 },
+    { month: "Jan", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Fev", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Mar", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Abr", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Mai", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Jun", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Jul", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Ago", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Set", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Out", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Nov", receita: 0, despesas: 0, lucro: 0 },
+    { month: "Dez", receita: 0, despesas: 0, lucro: 0 },
   ];
 
   const yearlyData = [
-    { year: "2019", receita: 420000, lucro: 168000 },
-    { year: "2020", receita: 380000, lucro: 140000 },
-    { year: "2021", receita: 520000, lucro: 210000 },
-    { year: "2022", receita: 680000, lucro: 285000 },
-    { year: "2023", receita: 820000, lucro: 355000 },
-    { year: "2024", receita: 918000, lucro: 412000 },
+    { year: "2019", receita: 0, lucro: 0 },
+    { year: "2020", receita: 0, lucro: 0 },
+    { year: "2021", receita: 0, lucro: 0 },
+    { year: "2022", receita: 0, lucro: 0 },
+    { year: "2023", receita: 0, lucro: 0 },
+    { year: "2024", receita: 0, lucro: 0 },
   ];
 
   const expenseBreakdown = [
-    { name: "Comissões Prestadores", value: 180000, color: "hsl(213, 90%, 35%)" },
-    { name: "Comissões Vidraçarias", value: 95000, color: "hsl(142, 76%, 36%)" },
-    { name: "Operacional", value: 85000, color: "hsl(38, 92%, 50%)" },
-    { name: "Marketing", value: 60000, color: "hsl(200, 100%, 50%)" },
-    { name: "Outros", value: 50000, color: "hsl(0, 84%, 60%)" },
+    { name: "Comissões Prestadores", value: 0, color: "hsl(213, 90%, 35%)" },
+    { name: "Comissões Vidraçarias", value: 0, color: "hsl(142, 76%, 36%)" },
+    { name: "Operacional", value: 0, color: "hsl(38, 92%, 50%)" },
+    { name: "Marketing", value: 0, color: "hsl(200, 100%, 50%)" },
+    { name: "Outros", value: 0, color: "hsl(0, 84%, 60%)" },
   ];
 
   const revenueBySource = [
-    { name: "Instalações", value: 520000, color: "hsl(213, 90%, 35%)" },
-    { name: "Assinaturas", value: 198000, color: "hsl(142, 76%, 36%)" },
-    { name: "Comissões", value: 145000, color: "hsl(38, 92%, 50%)" },
-    { name: "Outros", value: 55000, color: "hsl(200, 100%, 50%)" },
+    { name: "Instalações", value: 0, color: "hsl(213, 90%, 35%)" },
+    { name: "Assinaturas", value: 0, color: "hsl(142, 76%, 36%)" },
+    { name: "Comissões", value: 0, color: "hsl(38, 92%, 50%)" },
+    { name: "Outros", value: 0, color: "hsl(200, 100%, 50%)" },
   ];
 
-  const transactions = [
-    { description: "Comissão João Montador", type: "expense", value: -1250, date: "Hoje, 15:30" },
-    { description: "Instalação Box #1234", type: "income", value: 3500, date: "Hoje, 14:20" },
-    { description: "Assinatura Premium", type: "income", value: 299, date: "Hoje, 11:45" },
-    { description: "Comissão Vidraçaria Central", type: "expense", value: -850, date: "Ontem, 16:00" },
-    { description: "Instalação Box #1233", type: "income", value: 4200, date: "Ontem, 10:30" },
-  ];
+  useEffect(() => {
+    const carregarDados = async () => {
+      // Carregar transações recentes
+      const { data: financeiroData } = await supabase
+        .from('financeiro')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (financeiroData) {
+        const formatDate = (dateStr: string) => {
+          const date = new Date(dateStr);
+          const today = new Date();
+          const yesterday = new Date(today);
+          yesterday.setDate(yesterday.getDate() - 1);
+          
+          if (date.toDateString() === today.toDateString()) {
+            return `Hoje, ${format(date, 'HH:mm')}`;
+          } else if (date.toDateString() === yesterday.toDateString()) {
+            return `Ontem, ${format(date, 'HH:mm')}`;
+          }
+          return format(date, "dd/MM/yyyy, HH:mm");
+        };
+
+        const txs: Transaction[] = financeiroData.map(f => ({
+          id: f.id,
+          description: f.descricao || f.tipo,
+          type: f.tipo === 'receita' ? 'income' : 'expense',
+          value: f.tipo === 'receita' ? Number(f.valor) : -Number(f.valor),
+          date: formatDate(f.created_at)
+        }));
+        setTransactions(txs);
+
+        // Calcular totais
+        const totalReceitas = financeiroData
+          .filter(f => f.tipo === 'receita')
+          .reduce((acc, f) => acc + Number(f.valor), 0);
+        const totalDespesas = financeiroData
+          .filter(f => f.tipo !== 'receita')
+          .reduce((acc, f) => acc + Number(f.valor), 0);
+        const lucro = totalReceitas - totalDespesas;
+
+        setSummaryCards([
+          { label: "Receita Total", value: `R$ ${totalReceitas.toLocaleString()}`, change: "+0%", icon: DollarSign, color: "bg-success/10 text-success", trend: "up" },
+          { label: "Despesas", value: `R$ ${totalDespesas.toLocaleString()}`, change: "+0%", icon: CreditCard, color: "bg-destructive/10 text-destructive", trend: "up" },
+          { label: "Lucro Líquido", value: `R$ ${lucro.toLocaleString()}`, change: "+0%", icon: Wallet, color: "bg-primary/10 text-primary", trend: "up" },
+          { label: "Reserva", value: "R$ 0", change: "+0%", icon: PiggyBank, color: "bg-warning/10 text-warning", trend: "up" },
+        ]);
+      }
+    };
+
+    carregarDados();
+  }, []);
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">
@@ -304,7 +361,7 @@ const AdminFinanceiro = () => {
                     <div 
                       className="h-full rounded-full transition-all duration-500"
                       style={{ 
-                        width: `${(item.value / 918000) * 100}%`,
+                        width: item.value > 0 ? `${(item.value / 918000) * 100}%` : '0%',
                         backgroundColor: item.color
                       }}
                     />
@@ -325,33 +382,39 @@ const AdminFinanceiro = () => {
           <h2 className="text-lg font-semibold text-foreground font-display mb-4">
             Transações Recentes
           </h2>
-          <div className="space-y-3">
-            {transactions.map((tx, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  tx.type === 'income' ? 'bg-success/10' : 'bg-destructive/10'
-                }`}>
-                  {tx.type === 'income' ? 
-                    <TrendingUp className="w-5 h-5 text-success" /> : 
-                    <TrendingDown className="w-5 h-5 text-destructive" />
-                  }
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground text-sm">{tx.description}</p>
-                  <p className="text-xs text-muted-foreground">{tx.date}</p>
-                </div>
-                <span className={`font-semibold ${tx.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                  {tx.type === 'income' ? '+' : ''}R$ {Math.abs(tx.value).toLocaleString()}
-                </span>
-              </motion.div>
-            ))}
-          </div>
+          {transactions.length > 0 ? (
+            <div className="space-y-3">
+              {transactions.map((tx, index) => (
+                <motion.div
+                  key={tx.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    tx.type === 'income' ? 'bg-success/10' : 'bg-destructive/10'
+                  }`}>
+                    {tx.type === 'income' ? 
+                      <TrendingUp className="w-5 h-5 text-success" /> : 
+                      <TrendingDown className="w-5 h-5 text-destructive" />
+                    }
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground text-sm">{tx.description}</p>
+                    <p className="text-xs text-muted-foreground">{tx.date}</p>
+                  </div>
+                  <span className={`font-semibold ${tx.type === 'income' ? 'text-success' : 'text-destructive'}`}>
+                    {tx.type === 'income' ? '+' : ''}R$ {Math.abs(tx.value).toLocaleString()}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              Nenhuma transação encontrada
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

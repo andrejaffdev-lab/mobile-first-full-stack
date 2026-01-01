@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -11,22 +12,135 @@ import {
   Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { format, differenceInDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface Historico {
+  date: string;
+  type: string;
+  prestador: string;
+}
+
+interface GarantiaData {
+  status: "ATIVA" | "EXPIRADA";
+  ultimaManutencao: string;
+  proximaManutencao: string;
+  diasRestantes: number;
+  historico: Historico[];
+}
 
 const Garantia = () => {
   const navigate = useNavigate();
+  const [garantia, setGarantia] = useState<GarantiaData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data
-  const garantia = {
-    status: "ATIVA" as "ATIVA" | "EXPIRADA",
-    ultimaManutencao: "15 Mar 2024",
-    proximaManutencao: "15 Mar 2025",
-    diasRestantes: 74,
-    historico: [
-      { date: "15 Mar 2024", type: "Manutenção Preventiva", prestador: "João Souza" },
-      { date: "10 Mar 2023", type: "Manutenção Preventiva", prestador: "Pedro Montador" },
-      { date: "05 Mar 2022", type: "Instalação Inicial", prestador: "Vidraçaria Premium" },
-    ],
-  };
+  useEffect(() => {
+    const carregarGarantia = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar cliente
+      const { data: cliente } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!cliente) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Buscar ordens concluídas com prestador
+      const { data: ordens } = await supabase
+        .from('ordens_servico')
+        .select(`
+          *,
+          prestador:prestadores_servico(nome)
+        `)
+        .eq('cliente_id', cliente.id)
+        .eq('status', 'concluido')
+        .order('data_conclusao', { ascending: false });
+
+      if (!ordens || ordens.length === 0) {
+        setGarantia({
+          status: "EXPIRADA",
+          ultimaManutencao: "-",
+          proximaManutencao: "-",
+          diasRestantes: 0,
+          historico: []
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Verificar tipo de cada ordem
+      const { data: manutencoes } = await supabase
+        .from('processo_manutencao')
+        .select('ordem_id')
+        .in('ordem_id', ordens.map(o => o.id));
+
+      const manutencaoIds = new Set(manutencoes?.map(m => m.ordem_id) || []);
+
+      // Última manutenção
+      const ultimaOrdem = ordens[0];
+      const dataUltimaManutencao = ultimaOrdem.data_conclusao 
+        ? new Date(ultimaOrdem.data_conclusao) 
+        : new Date(ultimaOrdem.created_at);
+      
+      // Calcular próxima manutenção (1 ano após)
+      const dataProximaManutencao = new Date(dataUltimaManutencao);
+      dataProximaManutencao.setFullYear(dataProximaManutencao.getFullYear() + 1);
+
+      const hoje = new Date();
+      const diasRestantes = differenceInDays(dataProximaManutencao, hoje);
+      const garantiaAtiva = diasRestantes > 0;
+
+      // Montar histórico
+      const historico: Historico[] = ordens.slice(0, 5).map(ordem => {
+        const isManutencao = manutencaoIds.has(ordem.id);
+        return {
+          date: ordem.data_conclusao 
+            ? format(new Date(ordem.data_conclusao), "dd MMM yyyy", { locale: ptBR })
+            : format(new Date(ordem.created_at), "dd MMM yyyy", { locale: ptBR }),
+          type: isManutencao ? "Manutenção Preventiva" : "Aplicação de Película",
+          prestador: ordem.prestador?.nome || "Não informado"
+        };
+      });
+
+      setGarantia({
+        status: garantiaAtiva ? "ATIVA" : "EXPIRADA",
+        ultimaManutencao: format(dataUltimaManutencao, "dd MMM yyyy", { locale: ptBR }),
+        proximaManutencao: format(dataProximaManutencao, "dd MMM yyyy", { locale: ptBR }),
+        diasRestantes: Math.max(0, diasRestantes),
+        historico
+      });
+
+      setIsLoading(false);
+    };
+
+    carregarGarantia();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-container min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!garantia) {
+    return (
+      <div className="mobile-container min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Dados não encontrados</p>
+      </div>
+    );
+  }
 
   const isActive = garantia.status === "ATIVA";
 
@@ -129,37 +243,39 @@ const Garantia = () => {
         </motion.div>
 
         {/* Histórico */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h3 className="font-semibold text-foreground mb-4">Histórico de Manutenções</h3>
-          <div className="space-y-3">
-            {garantia.historico.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.25 + index * 0.05 }}
-                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
-              >
-                <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-success" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground">{item.type}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.date} • {item.prestador}
-                  </p>
-                </div>
-                <button className="text-primary">
-                  <Download className="w-5 h-5" />
-                </button>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {garantia.historico.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h3 className="font-semibold text-foreground mb-4">Histórico de Manutenções</h3>
+            <div className="space-y-3">
+              {garantia.historico.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 + index * 0.05 }}
+                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border"
+                >
+                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-success" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{item.type}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.date} • {item.prestador}
+                    </p>
+                  </div>
+                  <button className="text-primary">
+                    <Download className="w-5 h-5" />
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* CTA */}
         {!isActive && (
