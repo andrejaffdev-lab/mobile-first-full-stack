@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
@@ -149,6 +149,18 @@ const Prestadores = () => {
   };
 
   const [editingPrestador, setEditingPrestador] = useState<typeof prestadores[0] | null>(null);
+
+  // Trava o scroll do body quando o modal está aberto
+  useEffect(() => {
+    if (editingPrestador) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [editingPrestador]);
 
   const handleEdit = (prestador: typeof prestadores[0]) => {
     setEditingPrestador(prestador);
