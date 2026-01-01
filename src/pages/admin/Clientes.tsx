@@ -11,10 +11,13 @@ import {
   XCircle,
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const AdminClientes = () => {
   const navigate = useNavigate();
@@ -35,8 +38,18 @@ const AdminClientes = () => {
     toast.success(`Cliente "${nome}" removido com sucesso`);
   };
 
-  const handleEdit = (id: string) => {
-    toast.info("Função de edição será implementada em breve");
+  const [editingCliente, setEditingCliente] = useState<typeof clientes[0] | null>(null);
+
+  const handleEdit = (cliente: typeof clientes[0]) => {
+    setEditingCliente(cliente);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingCliente) {
+      setClientes(prev => prev.map(c => c.id === editingCliente.id ? editingCliente : c));
+      toast.success(`Cliente "${editingCliente.nome}" atualizado com sucesso`);
+      setEditingCliente(null);
+    }
   };
 
   const filtros = [
@@ -207,7 +220,7 @@ const AdminClientes = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(cliente.id)}
+                  onClick={() => handleEdit(cliente)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
@@ -233,6 +246,48 @@ const AdminClientes = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Edição */}
+      {editingCliente && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-xl p-6 w-full max-w-md"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Editar Cliente</h2>
+              <button onClick={() => setEditingCliente(null)} className="p-1 hover:bg-muted rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  value={editingCliente.nome}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, nome: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Telefone</Label>
+                <Input
+                  value={editingCliente.telefone}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, telefone: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>
+                  Cancelar
+                </Button>
+                <Button className="flex-1" onClick={handleSaveEdit}>
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

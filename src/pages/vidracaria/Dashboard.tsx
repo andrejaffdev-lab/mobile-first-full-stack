@@ -162,7 +162,7 @@ const VidracariaDashboard = () => {
         </motion.div>
       </div>
 
-      <BottomNav />
+      <BottomNav variant="vidracaria" />
     </div>
   );
 };

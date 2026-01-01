@@ -12,10 +12,13 @@ import {
   Pencil,
   Trash2,
   User,
-  Calendar
+  Calendar,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Ordens = () => {
   const navigate = useNavigate();
@@ -31,13 +34,23 @@ const Ordens = () => {
     { id: "6", titulo: "Instalação Box", cliente: "José Oliveira", status: "pendente", data: "22/01/2026", valor: "R$ 1.200,00" },
   ]);
 
+  const [editingOrdem, setEditingOrdem] = useState<typeof ordens[0] | null>(null);
+
   const handleDelete = (id: string, titulo: string) => {
     setOrdens(prev => prev.filter(o => o.id !== id));
     toast.success(`Ordem "${titulo}" removida com sucesso`);
   };
 
-  const handleEdit = (id: string) => {
-    toast.info("Função de edição será implementada em breve");
+  const handleEdit = (ordem: typeof ordens[0]) => {
+    setEditingOrdem(ordem);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingOrdem) {
+      setOrdens(prev => prev.map(o => o.id === editingOrdem.id ? editingOrdem : o));
+      toast.success(`Ordem "${editingOrdem.titulo}" atualizada com sucesso`);
+      setEditingOrdem(null);
+    }
   };
 
   const filtros = [
@@ -213,7 +226,7 @@ const Ordens = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(ordem.id)}
+                  onClick={() => handleEdit(ordem)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
@@ -239,6 +252,55 @@ const Ordens = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Edição */}
+      {editingOrdem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-xl p-6 w-full max-w-md"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Editar Ordem</h2>
+              <button onClick={() => setEditingOrdem(null)} className="p-1 hover:bg-muted rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Título</Label>
+                <Input
+                  value={editingOrdem.titulo}
+                  onChange={(e) => setEditingOrdem({ ...editingOrdem, titulo: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Cliente</Label>
+                <Input
+                  value={editingOrdem.cliente}
+                  onChange={(e) => setEditingOrdem({ ...editingOrdem, cliente: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Valor</Label>
+                <Input
+                  value={editingOrdem.valor}
+                  onChange={(e) => setEditingOrdem({ ...editingOrdem, valor: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setEditingOrdem(null)}>
+                  Cancelar
+                </Button>
+                <Button className="flex-1" onClick={handleSaveEdit}>
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

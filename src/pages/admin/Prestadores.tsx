@@ -12,10 +12,13 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Star
+  Star,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Prestadores = () => {
   const navigate = useNavigate();
@@ -36,8 +39,18 @@ const Prestadores = () => {
     toast.success(`Prestador "${nome}" removido com sucesso`);
   };
 
-  const handleEdit = (id: string) => {
-    toast.info("Função de edição será implementada em breve");
+  const [editingPrestador, setEditingPrestador] = useState<typeof prestadores[0] | null>(null);
+
+  const handleEdit = (prestador: typeof prestadores[0]) => {
+    setEditingPrestador(prestador);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingPrestador) {
+      setPrestadores(prev => prev.map(p => p.id === editingPrestador.id ? editingPrestador : p));
+      toast.success(`Prestador "${editingPrestador.nome}" atualizado com sucesso`);
+      setEditingPrestador(null);
+    }
   };
 
   const filtros = [
@@ -216,7 +229,7 @@ const Prestadores = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1 gap-1"
-                  onClick={() => handleEdit(prestador.id)}
+                  onClick={() => handleEdit(prestador)}
                 >
                   <Pencil className="w-4 h-4" />
                   Editar
@@ -242,6 +255,48 @@ const Prestadores = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Edição */}
+      {editingPrestador && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-xl p-6 w-full max-w-md"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Editar Prestador</h2>
+              <button onClick={() => setEditingPrestador(null)} className="p-1 hover:bg-muted rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Nome</Label>
+                <Input
+                  value={editingPrestador.nome}
+                  onChange={(e) => setEditingPrestador({ ...editingPrestador, nome: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Telefone</Label>
+                <Input
+                  value={editingPrestador.telefone}
+                  onChange={(e) => setEditingPrestador({ ...editingPrestador, telefone: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setEditingPrestador(null)}>
+                  Cancelar
+                </Button>
+                <Button className="flex-1" onClick={handleSaveEdit}>
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
