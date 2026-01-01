@@ -4,17 +4,38 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simula login - depois conectar com backend
-    navigate("/select-profile");
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error("E-mail ou senha inválidos");
+        return;
+      }
+
+      navigate("/select-profile");
+    } catch (err) {
+      console.error("Erro no login:", err);
+      toast.error("Erro ao entrar. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -105,8 +126,13 @@ const Login = () => {
             </button>
           </div>
 
-          <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90" size="lg">
-            Entrar
+          <Button
+            type="submit"
+            className="w-full bg-white text-primary hover:bg-white/90"
+            size="lg"
+            disabled={loading}
+          >
+            {loading ? "Entrando..." : "Entrar"}
           </Button>
 
           <Button
