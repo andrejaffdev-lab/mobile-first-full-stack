@@ -13,12 +13,21 @@ import {
   Trash2,
   User,
   Calendar,
-  X
+  X,
+  MapPin,
+  Phone,
+  Image,
+  FileText,
+  DollarSign,
+  Wrench
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Ordens = () => {
   const navigate = useNavigate();
@@ -26,12 +35,98 @@ const Ordens = () => {
   const [filtro, setFiltro] = useState<"todos" | "concluido" | "andamento" | "pendente">("todos");
 
   const [ordens, setOrdens] = useState([
-    { id: "1", titulo: "Manutenção Box Banheiro", cliente: "Ana Paula", status: "concluido", data: "15/01/2026", valor: "R$ 200,00" },
-    { id: "2", titulo: "Instalação Película", cliente: "Roberto Carlos", status: "andamento", data: "18/01/2026", valor: "R$ 350,00" },
-    { id: "3", titulo: "Troca de Roldanas", cliente: "Maria José", status: "pendente", data: "20/01/2026", valor: "R$ 150,00" },
-    { id: "4", titulo: "Manutenção Preventiva", cliente: "Fernando Lima", status: "concluido", data: "12/01/2026", valor: "R$ 180,00" },
-    { id: "5", titulo: "Reparo Porta Blindex", cliente: "Carla Santos", status: "andamento", data: "17/01/2026", valor: "R$ 280,00" },
-    { id: "6", titulo: "Instalação Box", cliente: "José Oliveira", status: "pendente", data: "22/01/2026", valor: "R$ 1.200,00" },
+    { 
+      id: "1", 
+      titulo: "Manutenção Box Banheiro", 
+      descricao: "Troca de roldanas e ajuste de portas do box",
+      cliente: "Ana Paula",
+      clienteTelefone: "(11) 99999-1111",
+      clienteEndereco: "Rua das Flores, 123 - São Paulo, SP",
+      status: "concluido", 
+      dataSolicitacao: "10/01/2026",
+      dataAgendamento: "15/01/2026",
+      dataConclusao: "15/01/2026",
+      valor: "R$ 200,00",
+      formaPagamento: "PIX",
+      prestador: "João Montador",
+      prestadorTelefone: "(11) 99999-1111",
+      tipoServico: "Manutenção",
+      materiais: "Roldanas (2un), Parafusos",
+      observacoesSolicitacao: "Box com dificuldade de deslizar",
+      observacoesExecucao: "Trocadas as roldanas superiores e inferiores. Ajustado o trilho.",
+      fotoAntes: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200",
+      fotoDepois: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200",
+      avaliacaoCliente: 5
+    },
+    { 
+      id: "2", 
+      titulo: "Instalação Película", 
+      descricao: "Aplicação de película fumê nas janelas da sala",
+      cliente: "Roberto Carlos",
+      clienteTelefone: "(11) 99999-2222",
+      clienteEndereco: "Av. Brasil, 456 - São Paulo, SP",
+      status: "andamento", 
+      dataSolicitacao: "12/01/2026",
+      dataAgendamento: "18/01/2026",
+      dataConclusao: "",
+      valor: "R$ 350,00",
+      formaPagamento: "Cartão de Crédito",
+      prestador: "Pedro Silva",
+      prestadorTelefone: "(11) 99999-2222",
+      tipoServico: "Instalação",
+      materiais: "Película fumê 3m x 1.5m",
+      observacoesSolicitacao: "Janelas da sala de estar, 3 folhas",
+      observacoesExecucao: "",
+      fotoAntes: "",
+      fotoDepois: "",
+      avaliacaoCliente: 0
+    },
+    { 
+      id: "3", 
+      titulo: "Troca de Roldanas", 
+      descricao: "Substituição das roldanas do box",
+      cliente: "Maria José",
+      clienteTelefone: "(11) 99999-3333",
+      clienteEndereco: "Rua Augusta, 789 - São Paulo, SP",
+      status: "pendente", 
+      dataSolicitacao: "18/01/2026",
+      dataAgendamento: "20/01/2026",
+      dataConclusao: "",
+      valor: "R$ 150,00",
+      formaPagamento: "Dinheiro",
+      prestador: "",
+      prestadorTelefone: "",
+      tipoServico: "Manutenção",
+      materiais: "",
+      observacoesSolicitacao: "Roldanas quebradas, box não fecha",
+      observacoesExecucao: "",
+      fotoAntes: "",
+      fotoDepois: "",
+      avaliacaoCliente: 0
+    },
+    { 
+      id: "4", 
+      titulo: "Manutenção Preventiva", 
+      descricao: "Revisão geral do box e espelhos",
+      cliente: "Fernando Lima",
+      clienteTelefone: "(11) 99999-4444",
+      clienteEndereco: "Rua Oscar Freire, 321 - São Paulo, SP",
+      status: "concluido", 
+      dataSolicitacao: "05/01/2026",
+      dataAgendamento: "12/01/2026",
+      dataConclusao: "12/01/2026",
+      valor: "R$ 180,00",
+      formaPagamento: "PIX",
+      prestador: "Marcos Oliveira",
+      prestadorTelefone: "(11) 99999-4444",
+      tipoServico: "Manutenção",
+      materiais: "Silicone, parafusos de reposição",
+      observacoesSolicitacao: "Revisão semestral",
+      observacoesExecucao: "Tudo em ordem, aplicado silicone preventivo nas bordas.",
+      fotoAntes: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200",
+      fotoDepois: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=200",
+      avaliacaoCliente: 5
+    },
   ]);
 
   const [editingOrdem, setEditingOrdem] = useState<typeof ordens[0] | null>(null);
@@ -212,7 +307,7 @@ const Ordens = () => {
                   <div className="flex items-center gap-2 mt-2">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Calendar className="w-3 h-3" />
-                      <span>{ordem.data}</span>
+                      <span>{ordem.dataAgendamento}</span>
                     </div>
                     <div className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(ordem.status)}`}>
                       {getStatusIcon(ordem.status)}
@@ -253,50 +348,286 @@ const Ordens = () => {
         )}
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição Completo */}
       {editingOrdem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background rounded-xl p-6 w-full max-w-md"
+            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Editar Ordem</h2>
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-lg font-semibold">Editar Ordem de Serviço</h2>
               <button onClick={() => setEditingOrdem(null)} className="p-1 hover:bg-muted rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <Label>Título</Label>
-                <Input
-                  value={editingOrdem.titulo}
-                  onChange={(e) => setEditingOrdem({ ...editingOrdem, titulo: e.target.value })}
-                />
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-6">
+                {/* Dados do Serviço */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" />
+                    Dados do Serviço
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label>Título</Label>
+                      <Input
+                        value={editingOrdem.titulo}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, titulo: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Descrição</Label>
+                      <Textarea
+                        value={editingOrdem.descricao}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, descricao: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label>Tipo de Serviço</Label>
+                      <Select
+                        value={editingOrdem.tipoServico}
+                        onValueChange={(value) => setEditingOrdem({ ...editingOrdem, tipoServico: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Manutenção">Manutenção</SelectItem>
+                          <SelectItem value="Instalação">Instalação</SelectItem>
+                          <SelectItem value="Reparo">Reparo</SelectItem>
+                          <SelectItem value="Troca">Troca</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={editingOrdem.status}
+                        onValueChange={(value) => setEditingOrdem({ ...editingOrdem, status: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="andamento">Em Andamento</SelectItem>
+                          <SelectItem value="concluido">Concluído</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cliente */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Dados do Cliente
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Nome do Cliente</Label>
+                      <Input
+                        value={editingOrdem.cliente}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, cliente: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Telefone</Label>
+                      <Input
+                        value={editingOrdem.clienteTelefone}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, clienteTelefone: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Endereço</Label>
+                      <Input
+                        value={editingOrdem.clienteEndereco}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, clienteEndereco: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Datas */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Datas
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label>Solicitação</Label>
+                      <Input
+                        value={editingOrdem.dataSolicitacao}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, dataSolicitacao: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Agendamento</Label>
+                      <Input
+                        value={editingOrdem.dataAgendamento}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, dataAgendamento: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Conclusão</Label>
+                      <Input
+                        value={editingOrdem.dataConclusao}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, dataConclusao: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Financeiro */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Financeiro
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Valor</Label>
+                      <Input
+                        value={editingOrdem.valor}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, valor: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Forma de Pagamento</Label>
+                      <Select
+                        value={editingOrdem.formaPagamento}
+                        onValueChange={(value) => setEditingOrdem({ ...editingOrdem, formaPagamento: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PIX">PIX</SelectItem>
+                          <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                          <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                          <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
+                          <SelectItem value="Boleto">Boleto</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prestador */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Wrench className="w-4 h-4" />
+                    Prestador Responsável
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Nome do Prestador</Label>
+                      <Input
+                        value={editingOrdem.prestador}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, prestador: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Telefone</Label>
+                      <Input
+                        value={editingOrdem.prestadorTelefone}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, prestadorTelefone: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Materiais Utilizados</Label>
+                      <Input
+                        value={editingOrdem.materiais}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, materiais: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Observações
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Observações da Solicitação</Label>
+                      <Textarea
+                        value={editingOrdem.observacoesSolicitacao}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, observacoesSolicitacao: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label>Observações da Execução</Label>
+                      <Textarea
+                        value={editingOrdem.observacoesExecucao}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, observacoesExecucao: e.target.value })}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fotos */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Image className="w-4 h-4" />
+                    Fotos
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Foto Antes (URL)</Label>
+                      <Input
+                        value={editingOrdem.fotoAntes}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, fotoAntes: e.target.value })}
+                        placeholder="https://..."
+                      />
+                      {editingOrdem.fotoAntes && (
+                        <img src={editingOrdem.fotoAntes} alt="Antes" className="mt-2 w-full h-24 object-cover rounded-lg" />
+                      )}
+                    </div>
+                    <div>
+                      <Label>Foto Depois (URL)</Label>
+                      <Input
+                        value={editingOrdem.fotoDepois}
+                        onChange={(e) => setEditingOrdem({ ...editingOrdem, fotoDepois: e.target.value })}
+                        placeholder="https://..."
+                      />
+                      {editingOrdem.fotoDepois && (
+                        <img src={editingOrdem.fotoDepois} alt="Depois" className="mt-2 w-full h-24 object-cover rounded-lg" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Avaliação */}
+                <div>
+                  <Label>Avaliação do Cliente (0-5)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="5"
+                    value={editingOrdem.avaliacaoCliente}
+                    onChange={(e) => setEditingOrdem({ ...editingOrdem, avaliacaoCliente: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Cliente</Label>
-                <Input
-                  value={editingOrdem.cliente}
-                  onChange={(e) => setEditingOrdem({ ...editingOrdem, cliente: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Valor</Label>
-                <Input
-                  value={editingOrdem.valor}
-                  onChange={(e) => setEditingOrdem({ ...editingOrdem, valor: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingOrdem(null)}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleSaveEdit}>
-                  Salvar
-                </Button>
-              </div>
+            </ScrollArea>
+            <div className="flex gap-2 p-6 border-t border-border">
+              <Button variant="outline" className="flex-1" onClick={() => setEditingOrdem(null)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={handleSaveEdit}>
+                Salvar
+              </Button>
             </div>
           </motion.div>
         </div>

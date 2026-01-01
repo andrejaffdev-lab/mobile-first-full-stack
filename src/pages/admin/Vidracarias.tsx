@@ -13,12 +13,20 @@ import {
   Pencil,
   Trash2,
   MapPin,
-  X
+  X,
+  Mail,
+  FileText,
+  CreditCard,
+  Users,
+  Percent
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Vidracarias = () => {
   const navigate = useNavigate();
@@ -26,12 +34,114 @@ const Vidracarias = () => {
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
 
   const [vidracarias, setVidracarias] = useState([
-    { id: "1", nome: "Vidraçaria Premium", telefone: "(11) 3333-1111", status: "ativo", cidade: "São Paulo", clientes: 45 },
-    { id: "2", nome: "Glass Center", telefone: "(11) 3333-2222", status: "ativo", cidade: "Campinas", clientes: 32 },
-    { id: "3", nome: "Vidros & Cia", telefone: "(11) 3333-3333", status: "pendente", cidade: "Santos", clientes: 0 },
-    { id: "4", nome: "Master Vidros", telefone: "(11) 3333-4444", status: "ativo", cidade: "Guarulhos", clientes: 67 },
-    { id: "5", nome: "Vidraçaria Express", telefone: "(11) 3333-5555", status: "inativo", cidade: "Osasco", clientes: 12 },
-    { id: "6", nome: "Vidros Top", telefone: "(11) 3333-6666", status: "pendente", cidade: "ABC", clientes: 0 },
+    { 
+      id: "1", 
+      nome: "Vidraçaria Premium", 
+      nomeFantasia: "Premium Vidros",
+      cnpj: "12.345.678/0001-90",
+      inscricaoEstadual: "123.456.789.000",
+      telefone: "(11) 3333-1111", 
+      telefone2: "(11) 99999-1111",
+      email: "contato@premium.com.br",
+      responsavel: "José da Silva",
+      endereco: "Rua dos Vidros, 100",
+      cidade: "São Paulo", 
+      estado: "SP",
+      cep: "01234-567",
+      status: "ativo", 
+      clientes: 45,
+      comissao: 5,
+      dadosBancarios: {
+        banco: "Itaú",
+        agencia: "1234",
+        conta: "56789-0",
+        tipoConta: "Corrente",
+        pix: "12.345.678/0001-90"
+      },
+      dataCadastro: "15/01/2024",
+      observacoes: "Parceiro desde 2024"
+    },
+    { 
+      id: "2", 
+      nome: "Glass Center", 
+      nomeFantasia: "Glass Center SP",
+      cnpj: "23.456.789/0001-01",
+      inscricaoEstadual: "234.567.890.111",
+      telefone: "(19) 3333-2222", 
+      telefone2: "",
+      email: "contato@glasscenter.com.br",
+      responsavel: "Maria Santos",
+      endereco: "Av. das Indústrias, 500",
+      cidade: "Campinas", 
+      estado: "SP",
+      cep: "13000-000",
+      status: "ativo", 
+      clientes: 32,
+      comissao: 4.5,
+      dadosBancarios: {
+        banco: "Bradesco",
+        agencia: "2345",
+        conta: "67890-1",
+        tipoConta: "Corrente",
+        pix: "contato@glasscenter.com.br"
+      },
+      dataCadastro: "20/03/2024",
+      observacoes: ""
+    },
+    { 
+      id: "3", 
+      nome: "Vidros & Cia", 
+      nomeFantasia: "Vidros & Cia",
+      cnpj: "34.567.890/0001-12",
+      inscricaoEstadual: "",
+      telefone: "(13) 3333-3333", 
+      telefone2: "",
+      email: "vidrosecia@email.com",
+      responsavel: "Carlos Lima",
+      endereco: "Rua do Comércio, 200",
+      cidade: "Santos", 
+      estado: "SP",
+      cep: "11000-000",
+      status: "pendente", 
+      clientes: 0,
+      comissao: 5,
+      dadosBancarios: {
+        banco: "",
+        agencia: "",
+        conta: "",
+        tipoConta: "",
+        pix: ""
+      },
+      dataCadastro: "28/12/2025",
+      observacoes: "Aguardando documentação completa"
+    },
+    { 
+      id: "4", 
+      nome: "Master Vidros", 
+      nomeFantasia: "Master Vidros GRU",
+      cnpj: "45.678.901/0001-23",
+      inscricaoEstadual: "456.789.012.333",
+      telefone: "(11) 3333-4444", 
+      telefone2: "(11) 99999-4444",
+      email: "master@vidros.com.br",
+      responsavel: "Fernando Oliveira",
+      endereco: "Av. Guarulhos, 1000",
+      cidade: "Guarulhos", 
+      estado: "SP",
+      cep: "07000-000",
+      status: "ativo", 
+      clientes: 67,
+      comissao: 6,
+      dadosBancarios: {
+        banco: "Nubank",
+        agencia: "0001",
+        conta: "12345678-9",
+        tipoConta: "Corrente",
+        pix: "(11) 99999-4444"
+      },
+      dataCadastro: "10/02/2024",
+      observacoes: "Parceiro premium, alto volume"
+    },
   ]);
 
   const [editingVidracaria, setEditingVidracaria] = useState<typeof vidracarias[0] | null>(null);
@@ -254,50 +364,275 @@ const Vidracarias = () => {
         )}
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição Completo */}
       {editingVidracaria && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background rounded-xl p-6 w-full max-w-md"
+            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <h2 className="text-lg font-semibold">Editar Vidraçaria</h2>
               <button onClick={() => setEditingVidracaria(null)} className="p-1 hover:bg-muted rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={editingVidracaria.nome}
-                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, nome: e.target.value })}
-                />
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-6">
+                {/* Dados da Empresa */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Dados da Empresa
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label>Razão Social</Label>
+                      <Input
+                        value={editingVidracaria.nome}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, nome: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Nome Fantasia</Label>
+                      <Input
+                        value={editingVidracaria.nomeFantasia}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, nomeFantasia: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>CNPJ</Label>
+                      <Input
+                        value={editingVidracaria.cnpj}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, cnpj: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Inscrição Estadual</Label>
+                      <Input
+                        value={editingVidracaria.inscricaoEstadual}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, inscricaoEstadual: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contato */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Contato
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Telefone Principal</Label>
+                      <Input
+                        value={editingVidracaria.telefone}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, telefone: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Telefone Secundário</Label>
+                      <Input
+                        value={editingVidracaria.telefone2}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, telefone2: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Email</Label>
+                      <Input
+                        type="email"
+                        value={editingVidracaria.email}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Responsável</Label>
+                      <Input
+                        value={editingVidracaria.responsavel}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, responsavel: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endereço */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Endereço
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label>Endereço</Label>
+                      <Input
+                        value={editingVidracaria.endereco}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, endereco: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Cidade</Label>
+                      <Input
+                        value={editingVidracaria.cidade}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, cidade: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Estado</Label>
+                      <Input
+                        value={editingVidracaria.estado}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, estado: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>CEP</Label>
+                      <Input
+                        value={editingVidracaria.cep}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, cep: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        value={editingVidracaria.status}
+                        onValueChange={(value) => setEditingVidracaria({ ...editingVidracaria, status: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ativo">Ativa</SelectItem>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="inativo">Inativa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dados Bancários */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" />
+                    Dados Bancários
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Banco</Label>
+                      <Input
+                        value={editingVidracaria.dadosBancarios.banco}
+                        onChange={(e) => setEditingVidracaria({ 
+                          ...editingVidracaria, 
+                          dadosBancarios: { ...editingVidracaria.dadosBancarios, banco: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Tipo de Conta</Label>
+                      <Select
+                        value={editingVidracaria.dadosBancarios.tipoConta}
+                        onValueChange={(value) => setEditingVidracaria({ 
+                          ...editingVidracaria, 
+                          dadosBancarios: { ...editingVidracaria.dadosBancarios, tipoConta: value }
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Corrente">Corrente</SelectItem>
+                          <SelectItem value="Poupança">Poupança</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Agência</Label>
+                      <Input
+                        value={editingVidracaria.dadosBancarios.agencia}
+                        onChange={(e) => setEditingVidracaria({ 
+                          ...editingVidracaria, 
+                          dadosBancarios: { ...editingVidracaria.dadosBancarios, agencia: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Conta</Label>
+                      <Input
+                        value={editingVidracaria.dadosBancarios.conta}
+                        onChange={(e) => setEditingVidracaria({ 
+                          ...editingVidracaria, 
+                          dadosBancarios: { ...editingVidracaria.dadosBancarios, conta: e.target.value }
+                        })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Chave PIX</Label>
+                      <Input
+                        value={editingVidracaria.dadosBancarios.pix}
+                        onChange={(e) => setEditingVidracaria({ 
+                          ...editingVidracaria, 
+                          dadosBancarios: { ...editingVidracaria.dadosBancarios, pix: e.target.value }
+                        })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Métricas */}
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Métricas e Comissão
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Clientes Indicados</Label>
+                      <Input
+                        type="number"
+                        value={editingVidracaria.clientes}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, clientes: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Comissão (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0"
+                        max="100"
+                        value={editingVidracaria.comissao}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, comissao: parseFloat(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label>Data de Cadastro</Label>
+                      <Input
+                        value={editingVidracaria.dataCadastro}
+                        onChange={(e) => setEditingVidracaria({ ...editingVidracaria, dataCadastro: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                <div>
+                  <Label>Observações</Label>
+                  <Textarea
+                    value={editingVidracaria.observacoes}
+                    onChange={(e) => setEditingVidracaria({ ...editingVidracaria, observacoes: e.target.value })}
+                    rows={3}
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Telefone</Label>
-                <Input
-                  value={editingVidracaria.telefone}
-                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, telefone: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Cidade</Label>
-                <Input
-                  value={editingVidracaria.cidade}
-                  onChange={(e) => setEditingVidracaria({ ...editingVidracaria, cidade: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingVidracaria(null)}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleSaveEdit}>
-                  Salvar
-                </Button>
-              </div>
+            </ScrollArea>
+            <div className="flex gap-2 p-6 border-t border-border">
+              <Button variant="outline" className="flex-1" onClick={() => setEditingVidracaria(null)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={handleSaveEdit}>
+                Salvar
+              </Button>
             </div>
           </motion.div>
         </div>

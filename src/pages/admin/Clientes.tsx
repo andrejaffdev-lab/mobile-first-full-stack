@@ -12,12 +12,19 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X
+  X,
+  Mail,
+  MapPin,
+  Calendar,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const AdminClientes = () => {
   const navigate = useNavigate();
@@ -25,12 +32,12 @@ const AdminClientes = () => {
   const [filtro, setFiltro] = useState<"todos" | "ativos" | "pendentes">("todos");
 
   const [clientes, setClientes] = useState([
-    { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", status: "ativo", dataIndicacao: "10/01/2026" },
-    { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", status: "ativo", dataIndicacao: "08/01/2026" },
-    { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", status: "pendente", dataIndicacao: "05/01/2026" },
-    { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", status: "ativo", dataIndicacao: "03/01/2026" },
-    { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", status: "inativo", dataIndicacao: "01/01/2026" },
-    { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", status: "pendente", dataIndicacao: "28/12/2025" },
+    { id: "1", nome: "Ana Paula Silva", telefone: "(11) 99999-1111", email: "ana.paula@email.com", cpf: "123.456.789-00", endereco: "Rua das Flores, 123", cidade: "São Paulo", estado: "SP", cep: "01234-567", status: "ativo", dataCadastro: "10/01/2026", observacoes: "Cliente preferencial" },
+    { id: "2", nome: "Roberto Carlos", telefone: "(11) 99999-2222", email: "roberto@email.com", cpf: "234.567.890-11", endereco: "Av. Brasil, 456", cidade: "São Paulo", estado: "SP", cep: "02345-678", status: "ativo", dataCadastro: "08/01/2026", observacoes: "" },
+    { id: "3", nome: "Maria José", telefone: "(11) 99999-3333", email: "maria.jose@email.com", cpf: "345.678.901-22", endereco: "Rua Augusta, 789", cidade: "São Paulo", estado: "SP", cep: "03456-789", status: "pendente", dataCadastro: "05/01/2026", observacoes: "Aguardando confirmação de documentos" },
+    { id: "4", nome: "Fernando Lima", telefone: "(11) 99999-4444", email: "fernando@email.com", cpf: "456.789.012-33", endereco: "Rua Oscar Freire, 321", cidade: "São Paulo", estado: "SP", cep: "04567-890", status: "ativo", dataCadastro: "03/01/2026", observacoes: "" },
+    { id: "5", nome: "Carla Santos", telefone: "(11) 99999-5555", email: "carla@email.com", cpf: "567.890.123-44", endereco: "Av. Paulista, 654", cidade: "São Paulo", estado: "SP", cep: "05678-901", status: "inativo", dataCadastro: "01/01/2026", observacoes: "Contrato encerrado" },
+    { id: "6", nome: "José Oliveira", telefone: "(11) 99999-6666", email: "jose.oliveira@email.com", cpf: "678.901.234-55", endereco: "Rua Consolação, 987", cidade: "São Paulo", estado: "SP", cep: "06789-012", status: "pendente", dataCadastro: "28/12/2025", observacoes: "" },
   ]);
 
   const handleDelete = (id: string, nome: string) => {
@@ -207,7 +214,7 @@ const AdminClientes = () => {
                     <span>{cliente.telefone}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Cadastrado em {cliente.dataIndicacao}
+                    Cadastrado em {cliente.dataCadastro}
                   </p>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(cliente.status)}`}>
@@ -247,43 +254,121 @@ const AdminClientes = () => {
         )}
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição Completo */}
       {editingCliente && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-background rounded-xl p-6 w-full max-w-md"
+            className="bg-background rounded-xl w-full max-w-lg max-h-[90vh] flex flex-col"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between p-6 border-b border-border">
               <h2 className="text-lg font-semibold">Editar Cliente</h2>
               <button onClick={() => setEditingCliente(null)} className="p-1 hover:bg-muted rounded">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="space-y-4">
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={editingCliente.nome}
-                  onChange={(e) => setEditingCliente({ ...editingCliente, nome: e.target.value })}
-                />
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <Label>Nome Completo</Label>
+                    <Input
+                      value={editingCliente.nome}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, nome: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>CPF</Label>
+                    <Input
+                      value={editingCliente.cpf}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, cpf: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Telefone</Label>
+                    <Input
+                      value={editingCliente.telefone}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, telefone: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={editingCliente.email}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Endereço</Label>
+                    <Input
+                      value={editingCliente.endereco}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, endereco: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Cidade</Label>
+                    <Input
+                      value={editingCliente.cidade}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, cidade: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Estado</Label>
+                    <Input
+                      value={editingCliente.estado}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, estado: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>CEP</Label>
+                    <Input
+                      value={editingCliente.cep}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, cep: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Status</Label>
+                    <Select
+                      value={editingCliente.status}
+                      onValueChange={(value) => setEditingCliente({ ...editingCliente, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="pendente">Pendente</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Data de Cadastro</Label>
+                    <Input
+                      value={editingCliente.dataCadastro}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, dataCadastro: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label>Observações</Label>
+                    <Textarea
+                      value={editingCliente.observacoes}
+                      onChange={(e) => setEditingCliente({ ...editingCliente, observacoes: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label>Telefone</Label>
-                <Input
-                  value={editingCliente.telefone}
-                  onChange={(e) => setEditingCliente({ ...editingCliente, telefone: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>
-                  Cancelar
-                </Button>
-                <Button className="flex-1" onClick={handleSaveEdit}>
-                  Salvar
-                </Button>
-              </div>
+            </ScrollArea>
+            <div className="flex gap-2 p-6 border-t border-border">
+              <Button variant="outline" className="flex-1" onClick={() => setEditingCliente(null)}>
+                Cancelar
+              </Button>
+              <Button className="flex-1" onClick={handleSaveEdit}>
+                Salvar
+              </Button>
             </div>
           </motion.div>
         </div>
