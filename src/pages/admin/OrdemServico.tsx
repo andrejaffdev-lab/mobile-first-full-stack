@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
 
 // Preços configuráveis
@@ -388,11 +389,37 @@ const OrdemServico: React.FC = () => {
       pdf.text("_______________________________", pageWidth - margin - 75, yPos + 30);
       pdf.text(cliente.nome || "Contratante", pageWidth - margin - 75, yPos + 35);
       
-      // Download do PDF
+      // Download do PDF para o prestador
       const nomeCliente = cliente.nome?.replace(/\s+/g, '_') || 'cliente';
       pdf.save(`Certificado_${nomeCliente}_${new Date().toISOString().slice(0,10)}.pdf`);
       
-      toast.success("PDF gerado com sucesso!");
+      // Enviar PDF por email para o cliente
+      if (cliente.email) {
+        try {
+          const pdfBase64 = pdf.output('datauristring').split(',')[1];
+          
+          const { data, error } = await supabase.functions.invoke('send-certificado', {
+            body: {
+              clienteEmail: cliente.email,
+              clienteNome: cliente.nome,
+              prestadorNome: prestadorNome,
+              pdfBase64: pdfBase64,
+            },
+          });
+          
+          if (error) {
+            console.error('Erro ao enviar email:', error);
+            toast.error("PDF baixado, mas erro ao enviar por email");
+          } else {
+            toast.success("PDF gerado e enviado por email para o cliente!");
+          }
+        } catch (emailError) {
+          console.error('Erro ao enviar email:', emailError);
+          toast.error("PDF baixado, mas erro ao enviar por email");
+        }
+      } else {
+        toast.success("PDF gerado! (Email do cliente não informado)");
+      }
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       toast.error("Erro ao gerar PDF");
