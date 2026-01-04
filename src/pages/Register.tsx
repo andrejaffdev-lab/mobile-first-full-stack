@@ -311,7 +311,7 @@ const Register = () => {
       >
         <div className="text-center mb-2">
           <h1 className="text-2xl font-bold text-white font-display tracking-tight">
-            BOX<span className="font-normal text-white/80">em</span> GARANTIA
+            ECOSISTEMA <span className="font-normal text-white/80">VIDREIRO</span>
           </h1>
         </div>
       </motion.div>

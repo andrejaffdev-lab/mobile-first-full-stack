@@ -212,7 +212,7 @@ const Profile = () => {
         </motion.div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Box em Garantia v1.0.0
+          Ecosistema Vidreiro v1.0.0
         </p>
       </div>
 

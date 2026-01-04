@@ -83,12 +83,12 @@ const handler = async (req: Request): Promise<Response> => {
       
       <p>Agradecemos pela confiança em nossos serviços!</p>
       
-      <p>Atenciosamente,<br><strong>Equipe BoxManutenção</strong></p>
+      <p>Atenciosamente,<br><strong>Equipe Ecosistema Vidreiro</strong></p>
     </div>
     
     <div class="footer">
       <p>Este é um e-mail automático. Por favor, não responda.</p>
-      <p>BoxManutenção - Serviços de Manutenção e Instalação de Box</p>
+      <p>Ecosistema Vidreiro - Serviços de Manutenção e Instalação de Box</p>
     </div>
   </div>
 </body>
