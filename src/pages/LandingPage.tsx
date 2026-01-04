@@ -49,7 +49,7 @@ const LandingPage = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-sm">Box em Garantia</span>
+            <span className="font-bold text-sm">Ecosistema Vidreiro</span>
           </div>
           <Button 
             size="sm" 
@@ -390,8 +390,8 @@ const LandingPage = () => {
               <Shield className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold">Box em Garantia</h4>
-              <p className="text-xs text-background/60">Manutenção preventiva de box</p>
+              <h4 className="font-bold">Ecosistema Vidreiro</h4>
+              <p className="text-xs text-background/60">Gestão completa para vidraçarias</p>
             </div>
           </div>
 
@@ -415,7 +415,7 @@ const LandingPage = () => {
           </div>
 
           <div className="border-t border-background/20 pt-6 flex flex-col gap-2 text-center text-xs text-background/50">
-            <p>© 2026 Box em Garantia. Todos os direitos reservados.</p>
+            <p>© 2026 Ecosistema Vidreiro. Todos os direitos reservados.</p>
             <p>Manutenção conforme ABNT NBR 14207</p>
           </div>
         </div>

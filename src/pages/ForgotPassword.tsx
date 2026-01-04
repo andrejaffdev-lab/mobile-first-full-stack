@@ -40,11 +40,11 @@ const ForgotPassword = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="mb-3"
           >
-            <h1 className="text-4xl font-bold text-white font-display tracking-tight">
-              BOX<span className="font-normal text-white/80">em</span>
+            <h1 className="text-3xl font-bold text-white font-display tracking-tight">
+              ECOSISTEMA
             </h1>
-            <h2 className="text-3xl font-bold text-white font-display -mt-1">
-              GARANTIA
+            <h2 className="text-2xl font-bold text-white/80 font-display -mt-1">
+              VIDREIRO
             </h2>
           </motion.div>
         </div>
