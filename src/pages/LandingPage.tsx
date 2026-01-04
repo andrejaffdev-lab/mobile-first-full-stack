@@ -119,8 +119,7 @@ const LandingPage = () => {
           </h1>
 
           <p className="text-white/80 text-lg mb-8 leading-relaxed">
-            Manutenção preventiva com profissionais qualificados. 
-            Garantia real e certificado digital.
+            Integração entre fabricantes, serviços e o cliente!
           </p>
 
           {/* CTA Buttons */}
